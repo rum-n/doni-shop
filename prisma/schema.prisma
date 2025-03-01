@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("customer") // "admin" or "customer"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+model Artwork {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String      @unique
+  description String
+  price       Float
+  medium      String
+  year        Int
+  dimensions  Json // { width: number, height: number, unit: string }
+  images      Json[] // Array of { url: string, alt: string }
+  inStock     Boolean     @default(true)
+  featured    Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderNumber     String      @unique
+  customer        User        @relation(fields: [customerId], references: [id])
+  customerId      String      @db.ObjectId
+  items           OrderItem[]
+  total           Float
+  status          String      @default("pending") // "pending", "processing", "completed", "cancelled"
+  shippingAddress Json? // Address details
+  paymentIntent   String? // Stripe payment intent ID
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String  @db.ObjectId
+  artwork   Artwork @relation(fields: [artworkId], references: [id])
+  artworkId String  @db.ObjectId
+  quantity  Int     @default(1)
+  price     Float
+}

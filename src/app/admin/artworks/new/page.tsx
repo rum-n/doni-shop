@@ -83,7 +83,7 @@ export default function NewArtwork() {
       });
 
       // Send to API
-      const response = await fetch('/api/artworks', {
+      const response = await fetch('/api/artwork', {
         method: 'POST',
         body: formDataToSend,
       });
@@ -106,15 +106,17 @@ export default function NewArtwork() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Add New Artwork</h1>
+      < h1 className="text-3xl font-bold mb-6" > Add New Artwork</h1 >
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+      {
+        error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )
+      }
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="title" className="block text-gray-700 mb-2">Title *</label>
@@ -303,6 +305,6 @@ export default function NewArtwork() {
           </button>
         </div>
       </form>
-    </div>
+    </div >
   );
 }

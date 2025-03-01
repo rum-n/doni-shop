@@ -5,73 +5,66 @@ import Image from 'next/image';
 import { db } from '@/lib/db';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
-
-interface Artwork {
-  id: string;
-  title: string;
-  slug: string;
-  price: number;
-  medium: string;
-  year: number;
-}
+import { Artwork } from '@/types/Artwork';
 
 export default function Home() {
   const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [heroImage, setHeroImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchFeaturedArtworks = async () => {
+    const fetchData = async () => {
       try {
-        const artworks = await db.artwork.findMany({
-          where: {
-            featured: true,
-            inStock: true,
-          },
-          take: 3,
-        });
-        setFeaturedArtworks(artworks);
+        // Fetch featured artworks
+        const artworksResponse = await fetch('/api/artwork?featured=true&inStock=true');
+        const artworksData = await artworksResponse.json();
+
+        if (artworksData.artworks) {
+          setFeaturedArtworks(artworksData.artworks.slice(0, 3));
+        }
+
+        // Fetch hero image from dedicated endpoint
+        const heroResponse = await fetch('/api/settings/hero-image');
+        const heroData = await heroResponse.json();
+
+        if (heroData.imageUrl) {
+          setHeroImage(heroData.imageUrl);
+        }
       } catch (error) {
-        console.error('Error fetching artworks:', error);
-        // Set mock data if database fetch fails
-        setFeaturedArtworks([
-          {
-            id: '1',
-            title: 'Sunset Over Mountains',
-            slug: 'sunset-over-mountains',
-            price: 1200,
-            medium: 'Oil on canvas',
-            year: 2023,
-          },
-          {
-            id: '2',
-            title: 'Abstract Emotions',
-            slug: 'abstract-emotions',
-            price: 950,
-            medium: 'Acrylic on canvas',
-            year: 2022,
-          },
-          {
-            id: '3',
-            title: 'Urban Landscape',
-            slug: 'urban-landscape',
-            price: 1500,
-            medium: 'Mixed media',
-            year: 2023,
-          }
-        ]);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchFeaturedArtworks();
+    fetchData();
   }, []);
 
   return (
     <>
       <Navbar currentPath="/" />
-      <main className="container mx-auto px-4 py-8">
-        <section className="hero py-16">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4">Artist Portfolio</h1>
-            <p className="text-xl mb-8">Discover unique artworks from a passionate creator</p>
+      <main>
+        {/* Hero Section with Fullscreen Image */}
+        <section className="relative h-screen">
+          {heroImage ? (
+            <div className="absolute inset-0">
+              <Image
+                src={heroImage}
+                alt="Hero Image"
+                fill
+                priority
+                style={{ objectFit: 'cover' }}
+              />
+              {/* Overlay to ensure text is readable */}
+              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+            </div>
+          ) : (
+            <div className="absolute inset-0 bg-white"></div>
+          )}
+
+          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+            <h1 className={`text-5xl font-bold mb-4 ${heroImage ? 'text-white' : 'text-gray-900'}`}>
+              Art by Violetta Boyadzhieva
+            </h1>
+            <p className={`text-xl mb-8 ${heroImage ? 'text-gray-200' : 'text-gray-700'}`}>
+              Discover unique artworks from a passionate creator
+            </p>
             <Link
               href="/gallery"
               className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
@@ -81,7 +74,8 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="featured-works py-16">
+        {/* Featured Works Section */}
+        <section className="featured-works py-16 container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-8 text-center">Featured Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredArtworks && featuredArtworks.length > 0 && featuredArtworks.map((artwork: any) => (

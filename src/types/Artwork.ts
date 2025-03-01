@@ -7,6 +7,11 @@ export interface Artwork {
   year: number;
   images?: { url: string; alt: string }[];
   description: string;
+  dimensions: {
+    width: string;
+    height: string;
+    unit: string;
+  };
   inStock: boolean;
   featured: boolean;
   createdAt: Date;

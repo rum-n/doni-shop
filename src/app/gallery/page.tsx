@@ -35,7 +35,7 @@ export default function Gallery() {
       setIsLoading(true);
       try {
         // Fetch from API endpoint
-        const response = await fetch('/api/artwork');
+        const response = await fetch('/api/artwork?featured=true&inStock=true');
         const data = await response.json();
 
         if (data.artworks) {
@@ -50,10 +50,6 @@ export default function Gallery() {
 
     fetchArtworks();
   }, []);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   const filteredArtworks = artworks.filter(artwork => {
     if (filter === 'all') return true;
@@ -118,7 +114,7 @@ export default function Gallery() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredArtworks.map((artwork) => (
                 <div key={artwork.id} className="artwork-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                  <div className="relative h-64">
+                  <div className="relative h-80">
                     {artwork.images && artwork.images[0] ? (
                       <Image
                         src={artwork.images[0].url}
@@ -136,18 +132,6 @@ export default function Gallery() {
                         SOLD
                       </div>
                     )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold">{artwork.title}</h3>
-                    <p className="text-gray-600">{artwork.medium}, {artwork.year}</p>
-                    <p className="text-lg font-bold mt-2">${artwork.price}</p>
-                    <p className="text-gray-600 mt-2 line-clamp-2">{artwork.description}</p>
-                    <Link
-                      href={`/artwork/${artwork.slug}`}
-                      className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                    >
-                      View Details
-                    </Link>
                   </div>
                 </div>
               ))}

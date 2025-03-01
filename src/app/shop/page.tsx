@@ -17,7 +17,7 @@ export default function Shop() {
       setIsLoading(true);
       try {
         // Fetch only available artworks
-        const response = await fetch('/api/artwork?inStock=true');
+        const response = await fetch('/api/artwork?featured=true&inStock=true');
         const data = await response.json();
 
         if (data.artworks) {
@@ -49,7 +49,6 @@ export default function Shop() {
     }
   });
 
-  // Filter artworks by price range
   const filteredArtworks = sortedArtworks.filter(
     artwork => artwork.price >= priceRange[0] && artwork.price <= priceRange[1]
   );
@@ -67,18 +66,10 @@ export default function Shop() {
       <Navbar currentPath="/shop" />
 
       <main className="container mx-auto px-4 py-8">
-        <section className="shop-header py-8">
-          <h1 className="text-4xl font-bold mb-4 text-center">Art Shop</h1>
-          <p className="text-xl text-gray-600 mb-8 text-center">
-            Purchase original artworks directly from the artist
-          </p>
-        </section>
-
         <section className="shop-filters mb-8">
-          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <div className="p-6 rounded-lg border border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h2 className="text-lg font-medium mb-2">Filter & Sort</h2>
                 <div className="flex flex-wrap gap-4">
                   <div>
                     <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
@@ -88,7 +79,7 @@ export default function Shop() {
                       id="sort"
                       value={sortOption}
                       onChange={handleSortChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm h-7 px-1"
                     >
                       <option value="newest">Newest</option>
                       <option value="oldest">Oldest</option>

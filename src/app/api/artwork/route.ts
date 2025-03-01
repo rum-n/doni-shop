@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { uploadImage } from '@/lib/uploadImage'; // You'll need to implement this
+import { uploadImage } from '@/lib/uploadImage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,11 +102,18 @@ export async function GET(request: NextRequest) {
       query.inStock = inStock;
     }
 
-    // Fetch artworks using Prisma
-    const artworks = await db.artwork.findMany({
-      where: query,
-      orderBy: { createdAt: 'desc' },
-    });
+    let artworks;
+
+    if (featured) {
+      artworks = await db.artwork.findMany({
+        where: { featured: true },
+        orderBy: { createdAt: 'desc' },
+      });
+    } else {
+      artworks = await db.artwork.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     return NextResponse.json({ artworks });
 

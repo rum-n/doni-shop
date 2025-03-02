@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-interface RouteParams {
-  params: {
-    slug: string;
-  };
-}
-
 export async function GET(
-  request: NextRequest,
-  context: RouteParams
+  req: NextRequest, res: NextResponse
 ) {
   try {
-    const slug = context.params.slug;
+    const slug = req.nextUrl.searchParams.get('slug');
 
     if (!slug) {
       return NextResponse.json(

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+type Params = {
+  params: {
+    slug: string;
+  };
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: Params
 ) {
   try {
     const slug = params.slug;

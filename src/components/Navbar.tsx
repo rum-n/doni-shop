@@ -39,7 +39,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                   : "text-gray-600 hover:text-gray-900"
                 }
               >
-                About
+                За мен
               </Link>
               <Link
                 href="/gallery"
@@ -48,7 +48,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                   : "text-gray-600 hover:text-gray-900"
                 }
               >
-                Gallery
+                Галерия
               </Link>
               <Link
                 href="/shop"
@@ -57,7 +57,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                   : "text-gray-600 hover:text-gray-900"
                 }
               >
-                Shop
+                Онлайн магазин
               </Link>
             </div>
           </div>
@@ -97,8 +97,8 @@ export default function Navbar({ currentPath }: NavbarProps) {
           <Link
             href="/about"
             className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/about')
-                ? 'text-gray-900 bg-gray-100'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              ? 'text-gray-900 bg-gray-100'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -107,8 +107,8 @@ export default function Navbar({ currentPath }: NavbarProps) {
           <Link
             href="/gallery"
             className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/gallery')
-                ? 'text-gray-900 bg-gray-100'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              ? 'text-gray-900 bg-gray-100'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -117,8 +117,8 @@ export default function Navbar({ currentPath }: NavbarProps) {
           <Link
             href="/shop"
             className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/shop')
-                ? 'text-gray-900 bg-gray-100'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              ? 'text-gray-900 bg-gray-100'
+              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             onClick={() => setIsMenuOpen(false)}
           >

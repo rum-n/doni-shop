@@ -64,11 +64,6 @@ export default function Home() {
                 fill
                 priority
                 style={{ objectFit: 'cover' }}
-                onError={(e) => {
-                  console.error('Image failed to load:', heroImage);
-                  // Fallback to a solid color if image fails
-                  setHeroImage(null);
-                }}
               />
               {/* Overlay to ensure text is readable */}
               <div className="absolute inset-0 bg-black opacity-40"></div>

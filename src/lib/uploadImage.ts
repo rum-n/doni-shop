@@ -8,8 +8,18 @@ export async function uploadImage(file: Blob): Promise<string> {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a unique filename
-    const filename = `${uuidv4()}-${file}`;
+    // Create a unique filename with proper extension
+    let filename;
+
+    if ('name' in file && typeof file.name === 'string') {
+      // Extract the file extension from the original filename
+      const fileExt = path.extname(file.name);
+      filename = `${uuidv4()}${fileExt}`;
+    } else {
+      // Fallback to a generic extension if name is not available
+      filename = `${uuidv4()}.jpg`;
+    }
+
     const filepath = path.join(process.cwd(), 'public/uploads', filename);
 
     // Ensure the directory exists

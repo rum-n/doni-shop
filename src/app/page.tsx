@@ -25,8 +25,21 @@ export default function Home() {
         const heroResponse = await fetch('/api/settings/hero-image');
         const heroData = await heroResponse.json();
 
+        console.log('Hero image data:', heroData); // Debug the response
+
         if (heroData.imageUrl) {
           setHeroImage(heroData.imageUrl);
+          console.log('Setting hero image to:', heroData.imageUrl);
+
+          // Test if the image is accessible
+          fetch(heroData.imageUrl)
+            .then(response => {
+              console.log('Image fetch status:', response.status);
+              if (!response.ok) {
+                console.error('Image not found or not accessible');
+              }
+            })
+            .catch(err => console.error('Error fetching image:', err));
         } else {
           setHeroImage(null);
         }
@@ -51,9 +64,14 @@ export default function Home() {
                 fill
                 priority
                 style={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  console.error('Image failed to load:', heroImage);
+                  // Fallback to a solid color if image fails
+                  setHeroImage(null);
+                }}
               />
               {/* Overlay to ensure text is readable */}
-              <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+              <div className="absolute inset-0 bg-black opacity-40"></div>
             </div>
           ) : (
             <div className="absolute inset-0 bg-white"></div>
@@ -66,18 +84,26 @@ export default function Home() {
             <p className={`text-xl mb-8 ${heroImage ? 'text-gray-200' : 'text-gray-700'}`}>
               Discover unique artworks from a passionate creator
             </p>
-            <Link
-              href="/gallery"
-              className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
-            >
-              View Gallery
-            </Link>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link
+                href="/gallery"
+                className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
+              >
+                Галерия
+              </Link>
+              <Link
+                href="/shop"
+                className="bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-900 transition"
+              >
+                Онлайн магазин
+              </Link>
+            </div>
           </div>
         </section>
 
         {/* Featured Works Section */}
         <section className="featured-works py-16 container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8 text-center">Featured Works</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">Избрани творби</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredArtworks && featuredArtworks.length > 0 && featuredArtworks.map((artwork: Artwork) => (
               <div key={artwork.id} className="artwork-card border rounded-lg overflow-hidden">

@@ -4,6 +4,11 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { uploadImage } from '@/lib/uploadImage';
 
+type QueryArtwork = {
+  featured?: boolean;
+  inStock?: boolean;
+};
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
@@ -92,7 +97,7 @@ export async function GET(request: NextRequest) {
     const inStock = searchParams.get('inStock') === 'true';
 
     // Build query
-    const query: any = {};
+    const query: QueryArtwork = {};
 
     if (featured !== null) {
       query.featured = featured;

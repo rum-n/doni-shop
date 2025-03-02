@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { db } from '@/lib/db';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
@@ -80,7 +79,7 @@ export default function Home() {
         <section className="featured-works py-16 container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-8 text-center">Featured Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredArtworks && featuredArtworks.length > 0 && featuredArtworks.map((artwork: any) => (
+            {featuredArtworks && featuredArtworks.length > 0 && featuredArtworks.map((artwork: Artwork) => (
               <div key={artwork.id} className="artwork-card border rounded-lg overflow-hidden">
                 <div className="relative h-64">
                   {artwork.images && artwork.images[0] && (

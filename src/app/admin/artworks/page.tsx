@@ -54,47 +54,54 @@ export default async function ManageArtworks() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {artworks.map((artwork: any) => (
-                <tr key={artwork.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{artwork.title}</div>
-                    <div className="text-sm text-gray-500">{artwork.medium}, {artwork.year}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${artwork.price}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${artwork.inStock
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                      }`}>
-                      {artwork.inStock ? 'Available' : 'Sold'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${artwork.featured
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
-                      }`}>
-                      {artwork.featured ? 'Featured' : 'Not Featured'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      href={`/admin/artworks/${artwork.id}`}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      Edit
-                    </Link>
-                    <button
-                      className="text-red-600 hover:text-red-900"
-                    // You'd implement delete functionality here
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {artworks.map((artwork) => {
+                const typedArtwork = {
+                  ...artwork,
+                  images: artwork.images as { url: string; alt: string }[],
+                  dimensions: artwork.dimensions as { width: number; height: number }
+                };
+                return (
+                  <tr key={typedArtwork.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{typedArtwork.title}</div>
+                      <div className="text-sm text-gray-500">{typedArtwork.medium}, {typedArtwork.year}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">${typedArtwork.price}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typedArtwork.inStock
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
+                        {typedArtwork.inStock ? 'Available' : 'Sold'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typedArtwork.featured
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-800'
+                        }`}>
+                        {typedArtwork.featured ? 'Featured' : 'Not Featured'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <Link
+                        href={`/admin/artworks/${typedArtwork.id}`}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        className="text-red-600 hover:text-red-900"
+                      // You'd implement delete functionality here
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

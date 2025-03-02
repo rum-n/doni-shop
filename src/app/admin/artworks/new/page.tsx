@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import AdminNavbar from '@/components/AdminNavbar';
 
 export default function NewArtwork() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   // Redirect if not authenticated

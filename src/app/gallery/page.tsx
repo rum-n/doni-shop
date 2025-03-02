@@ -1,10 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
-import { Artwork } from '@prisma/client';
 
 interface ArtworkWithImages {
   id: string;
@@ -27,7 +25,6 @@ interface ArtworkWithImages {
 export default function Gallery() {
   const [artworks, setArtworks] = useState<ArtworkWithImages[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {

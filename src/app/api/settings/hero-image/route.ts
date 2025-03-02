@@ -15,7 +15,7 @@ export async function GET() {
       // Extract the URL from the JSON value
       const imageUrl = typeof heroSetting.value === 'string'
         ? heroSetting.value
-        : (heroSetting.value as any).url || null;
+        : (heroSetting.value as { url: string }).url || null;
 
       return NextResponse.json({ imageUrl });
     } else {
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     // Extract the URL from the JSON value
     const responseUrl = typeof heroSetting.value === 'string'
       ? heroSetting.value
-      : (heroSetting.value as any).url || null;
+      : (heroSetting.value as { url: string }).url || null;
 
     return NextResponse.json({
       message: 'Hero image updated successfully',

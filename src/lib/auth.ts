@@ -3,7 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcrypt';
 import { db } from '@/lib/db';
 import "next-auth"
-import { DefaultSession, DefaultUser } from "next-auth"
+import { DefaultUser } from "next-auth"
 
 declare module "next-auth" {
   interface User extends DefaultUser {

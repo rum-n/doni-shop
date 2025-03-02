@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcrypt';
 import { db } from '@/lib/db';
-import crypto from 'crypto';
 
 // This should be a secure, randomly generated string
 const API_SECRET = process.env.API_SECRET;
@@ -48,9 +47,7 @@ export async function POST(request: NextRequest) {
 
     console.log('User created:', user.id); // Debug log
 
-    // Return the user without the password
-    const { password: _, ...userWithoutPassword } = user;
-    return NextResponse.json({ user: userWithoutPassword }, { status: 201 });
+    return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
     // Return more detailed error information

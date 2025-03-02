@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-type Params = {
+interface RouteParams {
   params: {
     slug: string;
   };
-};
+}
 
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  context: RouteParams
 ) {
   try {
-    const slug = params.slug;
+    const slug = context.params.slug;
 
     if (!slug) {
       return NextResponse.json(

@@ -62,7 +62,7 @@ model OrderItem {
 model SiteSettings {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   key       String   @unique
-  value     Json
+  value     Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -11,8 +11,13 @@ export async function GET() {
       where: { key: 'heroImage' },
     });
 
-    if (heroSetting) {
-      return NextResponse.json({ imageUrl: heroSetting.value?.toString() || null });
+    if (heroSetting && heroSetting.value) {
+      // Extract the URL from the JSON value
+      const imageUrl = typeof heroSetting.value === 'string'
+        ? heroSetting.value
+        : (heroSetting.value as any).url || null;
+
+      return NextResponse.json({ imageUrl });
     } else {
       return NextResponse.json({ imageUrl: null });
     }
@@ -59,9 +64,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Extract the URL from the JSON value
+    const responseUrl = typeof heroSetting.value === 'string'
+      ? heroSetting.value
+      : (heroSetting.value as any).url || null;
+
     return NextResponse.json({
       message: 'Hero image updated successfully',
-      imageUrl: heroSetting.value?.toString() || null
+      imageUrl: responseUrl
     }, { status: 200 });
 
   } catch (error) {

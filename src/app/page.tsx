@@ -28,6 +28,8 @@ export default function Home() {
 
         if (heroData.imageUrl) {
           setHeroImage(heroData.imageUrl);
+        } else {
+          setHeroImage(null);
         }
       } catch (error) {
         console.error('Error fetching data:', error);

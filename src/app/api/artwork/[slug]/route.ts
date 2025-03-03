@@ -6,9 +6,8 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const slug = params.slug;
     console.log(`Attempting to fetch artwork with slug: "${slug}"`);
-    console.log(request);
 
     if (!slug) {
       return NextResponse.json(

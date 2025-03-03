@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import AdminNavbar from '@/components/AdminNavbar';
 
 export default function SiteSettings() {
   const { status } = useSession();
@@ -88,68 +89,71 @@ export default function SiteSettings() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Site Settings</h1>
+    <>
+      <AdminNavbar />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Site Settings</h1>
 
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4">Homepage Hero Image</h2>
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <h2 className="text-xl font-semibold mb-4">Homepage Hero Image</h2>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            {success}
-          </div>
-        )}
-
-        {currentHeroImage && (
-          <div className="mb-4">
-            <p className="text-gray-700 mb-2">Current Hero Image:</p>
-            <div className="relative h-64 w-full">
-              <Image
-                src={currentHeroImage}
-                alt="Current Hero Image"
-                fill
-                style={{ objectFit: 'cover' }}
-                className="rounded-md"
-              />
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
             </div>
-          </div>
-        )}
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="heroImage" className="block text-gray-700 mb-2">
-              Upload New Hero Image
-            </label>
-            <input
-              type="file"
-              id="heroImage"
-              name="heroImage"
-              onChange={handleImageChange}
-              accept="image/*"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Recommended size: 1920x1080px or larger. This image will be displayed full-screen on the homepage.
-            </p>
-          </div>
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+              {success}
+            </div>
+          )}
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isSubmitting || !heroImage}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isSubmitting ? 'Uploading...' : 'Update Hero Image'}
-            </button>
-          </div>
-        </form>
+          {currentHeroImage && (
+            <div className="mb-4">
+              <p className="text-gray-700 mb-2">Current Hero Image:</p>
+              <div className="relative h-64 w-full">
+                <Image
+                  src={currentHeroImage}
+                  alt="Current Hero Image"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  className="rounded-md"
+                />
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label htmlFor="heroImage" className="block text-gray-700 mb-2">
+                Upload New Hero Image
+              </label>
+              <input
+                type="file"
+                id="heroImage"
+                name="heroImage"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Recommended size: 1920x1080px or larger. This image will be displayed full-screen on the homepage.
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting || !heroImage}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSubmitting ? 'Uploading...' : 'Update Hero Image'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

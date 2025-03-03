@@ -1,32 +1,36 @@
 // src/lib/uploadImage.ts
-import { writeFile } from 'fs/promises';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function uploadImage(file: Blob): Promise<string> {
   try {
+    // Convert Blob to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64Data = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-    // Create a unique filename with proper extension
-    let filename;
+    // Upload to Cloudinary
+    const result = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload(
+        base64Data,
+        {
+          folder: 'artwork-uploads',
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+    });
 
-    if ('name' in file && typeof file.name === 'string') {
-      // Extract the file extension from the original filename
-      const fileExt = path.extname(file.name);
-      filename = `${uuidv4()}${fileExt}`;
-    } else {
-      // Fallback to a generic extension if name is not available
-      filename = `${uuidv4()}.jpg`;
-    }
-
-    const filepath = path.join(process.cwd(), 'public/uploads', filename);
-
-    // Ensure the directory exists
-    await writeFile(filepath, buffer);
-
-    // Return the URL that can be used to access the file
-    return `/uploads/${filename}`;
+    // Return the secure URL
+    return result.secure_url;
   } catch (error) {
     console.error('Error uploading image:', error);
     throw new Error('Failed to upload image');

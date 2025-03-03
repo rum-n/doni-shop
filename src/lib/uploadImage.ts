@@ -1,4 +1,3 @@
-// src/lib/uploadImage.ts
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
@@ -8,6 +7,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Define the Cloudinary upload response type
+interface CloudinaryUploadResult {
+  public_id: string;
+  version: number;
+  signature: string;
+  width: number;
+  height: number;
+  format: string;
+  resource_type: string;
+  created_at: string;
+  tags: string[];
+  bytes: number;
+  type: string;
+  etag: string;
+  url: string;
+  secure_url: string;
+  folder: string;
+  original_filename: string;
+  api_key: string;
+}
+
 export async function uploadImage(file: Blob): Promise<string> {
   try {
     // Convert Blob to base64
@@ -16,7 +36,7 @@ export async function uploadImage(file: Blob): Promise<string> {
     const base64Data = `data:${file.type};base64,${buffer.toString('base64')}`;
 
     // Upload to Cloudinary
-    const result = await new Promise<any>((resolve, reject) => {
+    const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
       cloudinary.uploader.upload(
         base64Data,
         {
@@ -24,7 +44,7 @@ export async function uploadImage(file: Blob): Promise<string> {
         },
         (error, result) => {
           if (error) reject(error);
-          else resolve(result);
+          else resolve(result as unknown as CloudinaryUploadResult);
         }
       );
     });

@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { slug: string } }
-) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
-    const slug = params.slug;
+    const slug = (await params).slug;
     console.log(`Attempting to fetch artwork with slug: "${slug}"`);
 
     if (!slug) {

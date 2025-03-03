@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
   try {
-    const slug = req.nextUrl.searchParams.get('slug');
+    const { slug } = params;
+    console.log(`Attempting to fetch artwork with slug: "${slug}"`);
+    console.log(request);
 
     if (!slug) {
       return NextResponse.json(
@@ -25,9 +30,18 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ artwork });
   } catch (error) {
+    // Log detailed error information
     console.error('Error fetching artwork:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return NextResponse.json(
-      { message: 'An error occurred while fetching the artwork' },
+      {
+        message: 'An error occurred while fetching the artwork',
+        error: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }

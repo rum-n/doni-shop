@@ -3,8 +3,29 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 export default function About() {
+  const [aboutContent, setAboutContent] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAboutContent = async () => {
+      try {
+        const response = await fetch('/api/settings/about-me');
+        const data = await response.json();
+        setAboutContent(data.content || '');
+      } catch (error) {
+        console.error('Error fetching about content:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAboutContent();
+  }, []);
+
   return (
     <>
       <Navbar currentPath="/about" />
@@ -43,7 +64,21 @@ export default function About() {
             </div>
           </div>
 
-          <div className="artist-statement mb-12">
+          <div className="container mx-auto py-12">
+            {isLoading ? (
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : aboutContent ? (
+              <div className="prose prose-lg max-w-none">
+                <ReactMarkdown>{aboutContent}</ReactMarkdown>
+              </div>
+            ) : (
+              <p className="text-center text-gray-500">No about content available yet.</p>
+            )}
+          </div>
+
+          {/* <div className="artist-statement mb-12">
             <h2 className="text-2xl font-semibold mb-4">Визия, вдъхновение и цели</h2>
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
               <p className="text-gray-700 mb-4 italic">
@@ -57,7 +92,7 @@ export default function About() {
               </p>
               <p className="text-gray-700 italic">Цветът и неговото пътуване във водата са движеща сила в работата ми и намирам несекващо вдъхновение в неговите фини нюанси и сложни взаимоотношения.&quot;</p>
             </div>
-          </div>
+          </div> */}
 
           <div className="contact-info mb-12">
             <h2 className="text-2xl font-semibold mb-4">За контакт</h2>

@@ -11,15 +11,19 @@ export async function GET() {
       where: { key: 'heroImage' },
     });
 
+    const homepageContent = await db.siteSettings.findUnique({
+      where: { key: 'homepageContent' },
+    });
+
     if (heroSetting && heroSetting.value) {
       // Extract the URL from the JSON value
       const imageUrl = typeof heroSetting.value === 'string'
         ? heroSetting.value
         : (heroSetting.value as { url: string }).url || null;
 
-      return NextResponse.json({ imageUrl });
+      return NextResponse.json({ imageUrl, homepageContent });
     } else {
-      return NextResponse.json({ imageUrl: null });
+      return NextResponse.json({ imageUrl: null, homepageContent: null });
     }
   } catch (error) {
     console.error('Error fetching hero image:', error);

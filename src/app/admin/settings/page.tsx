@@ -27,6 +27,7 @@ export default function SiteSettings() {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [editorLoaded, setEditorLoaded] = useState(false);
+  const [homepageContent, setHomepageContent] = useState('');
 
   useEffect(() => {
     // Fetch current hero image
@@ -124,6 +125,35 @@ export default function SiteSettings() {
     }
   };
 
+  const handleHomepageContentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('/api/settings/homepage-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: homepageContent }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update homepage content');
+      }
+
+      setSuccessMessage('Homepage content updated successfully');
+    } catch (error) {
+      setError('An error occurred while updating the homepage content');
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <AdminNavbar />
@@ -141,6 +171,34 @@ export default function SiteSettings() {
             {successMessage}
           </div>
         )}
+
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+          <h2 className="text-xl font-semibold mb-4">Homepage Content</h2>
+
+          <form onSubmit={handleHomepageContentSubmit}>
+            <div className="mb-4">
+              <div className="border border-gray-300 rounded-md overflow-hidden">
+                {editorLoaded ? (
+                  <ClientMDXEditor
+                    markdown={homepageContent}
+                    onChange={setHomepageContent}
+                  />
+                ) : (
+                  <div className="flex justify-center items-center h-[400px] bg-gray-50">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 mt-4"
+            >
+              {isSubmitting ? 'Saving...' : 'Update Homepage Content'}
+            </button>
+          </form>
+        </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">
           <h2 className="text-xl font-semibold mb-4">Hero Image</h2>
@@ -184,9 +242,6 @@ export default function SiteSettings() {
 
           <form onSubmit={handleAboutMeSubmit}>
             <div className="mb-4">
-              <label htmlFor="aboutMeContent" className="block text-gray-700 mb-2">
-                About Me Content
-              </label>
               <div className="border border-gray-300 rounded-md overflow-hidden">
                 {editorLoaded ? (
                   <ClientMDXEditor

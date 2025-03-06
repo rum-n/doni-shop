@@ -5,15 +5,16 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
+import ReactMarkdown from 'react-markdown';
 
 export default function Home() {
   const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [homepageContent, setHomepageContent] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch featured artworks
         const artworksResponse = await fetch('/api/artwork?featured=true&inStock=true');
         const artworksData = await artworksResponse.json();
 
@@ -21,27 +22,19 @@ export default function Home() {
           setFeaturedArtworks(artworksData.artworks.slice(0, 3));
         }
 
-        // Fetch hero image from dedicated endpoint
         const heroResponse = await fetch('/api/settings/hero-image');
         const heroData = await heroResponse.json();
 
-        console.log('Hero image data:', heroData); // Debug the response
-
         if (heroData.imageUrl) {
           setHeroImage(heroData.imageUrl);
-          console.log('Setting hero image to:', heroData.imageUrl);
-
-          // Test if the image is accessible
-          fetch(heroData.imageUrl)
-            .then(response => {
-              console.log('Image fetch status:', response.status);
-              if (!response.ok) {
-                console.error('Image not found or not accessible');
-              }
-            })
-            .catch(err => console.error('Error fetching image:', err));
         } else {
           setHeroImage(null);
+        }
+
+        if (heroData.homepageContent) {
+          setHomepageContent(heroData.homepageContent.value.content);
+        } else {
+          setHomepageContent(null);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -73,13 +66,12 @@ export default function Home() {
           )}
 
           <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
-            <h1 className={`text-5xl font-bold mb-4 ${heroImage ? 'text-white' : 'text-gray-900'}`}>
-              Art by Violetta Boyadzhieva
-            </h1>
-            <p className={`text-xl mb-8 ${heroImage ? 'text-gray-200' : 'text-gray-700'}`}>
-              Discover unique artworks from a passionate creator
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+            {homepageContent && (
+              <div className={`${heroImage ? 'text-white' : 'text-gray-900'}`}>
+                <ReactMarkdown>{homepageContent}</ReactMarkdown>
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
               <Link
                 href="/gallery"
                 className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"

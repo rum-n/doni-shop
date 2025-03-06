@@ -6,7 +6,6 @@ import { useSession } from 'next-auth/react';
 import AdminNavbar from '@/components/AdminNavbar';
 import dynamic from 'next/dynamic';
 
-// Import the client-only MDXEditor component with dynamic import and no SSR
 const ClientMDXEditor = dynamic(() => import('@/components/ClientMDXEditor'), {
   ssr: false,
 });
@@ -15,7 +14,6 @@ export default function SiteSettings() {
   const { status } = useSession();
   const router = useRouter();
 
-  // Redirect if not authenticated
   if (status === 'unauthenticated') {
     router.push('/login');
   }
@@ -28,7 +26,6 @@ export default function SiteSettings() {
   const [successMessage, setSuccessMessage] = useState('');
   const [editorLoaded, setEditorLoaded] = useState(false);
   const [homepageContent, setHomepageContent] = useState('');
-  const [currentHomepageContent, setCurrentHomepageContent] = useState('');
 
   useEffect(() => {
     // Fetch current hero image

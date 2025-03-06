@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
-import { Button } from '@mdxeditor/editor';
 import { BuyButton } from '@/components/BuyButton';
 
 export default function Shop() {

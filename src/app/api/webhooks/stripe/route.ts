@@ -3,6 +3,15 @@ import { headers } from 'next/headers';
 import stripe from '@/lib/stripe';
 import { db } from '@/lib/db';
 
+interface StripeSession {
+  id: string;
+  metadata: Record<string, string>;
+  amount_total: number;
+  customer_details: {
+    email: string;
+  };
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = (await headers()).get('stripe-signature') as string;
@@ -19,15 +28,18 @@ export async function POST(request: Request) {
     );
 
     if (event.type === 'checkout.session.completed') {
-      const session = event.data.object as any;
+      const session = event.data.object as unknown as StripeSession;
 
-      // Update artwork status in database
+      if (!session.metadata?.artworkId) {
+        console.error('Missing artworkId in session metadata');
+        return NextResponse.json({ message: 'Invalid session data' }, { status: 400 });
+      }
+
       await db.artwork.update({
         where: { id: session.metadata.artworkId },
         data: { inStock: false },
       });
 
-      // Create an order record
       await db.order.create({
         data: {
           orderNumber: session.id,

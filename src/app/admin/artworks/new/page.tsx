@@ -9,7 +9,6 @@ export default function NewArtwork() {
   const { status } = useSession();
   const router = useRouter();
 
-  // Redirect if not authenticated
   if (status === 'unauthenticated') {
     router.push('/admin/login');
   }
@@ -70,20 +69,16 @@ export default function NewArtwork() {
     setError('');
 
     try {
-      // Create FormData to handle file uploads
       const formDataToSend = new FormData();
 
-      // Add all text fields
       Object.entries(formData).forEach(([key, value]) => {
         formDataToSend.append(key, value.toString());
       });
 
-      // Add images
       images.forEach((image, index) => {
         formDataToSend.append(`image-${index}`, image);
       });
 
-      // Send to API
       const response = await fetch('/api/artwork', {
         method: 'POST',
         body: formDataToSend,
@@ -94,9 +89,8 @@ export default function NewArtwork() {
         throw new Error(data.message || 'Failed to create artwork');
       }
 
-      // Redirect to artworks list
       router.push('/admin/artworks');
-      router.refresh(); // Refresh the page to show the new artwork
+      router.refresh();
 
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
@@ -110,7 +104,6 @@ export default function NewArtwork() {
       <AdminNavbar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Add New Artwork</h1>
-
         {
           error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

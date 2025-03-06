@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import stripe from '@/lib/stripe';
 
@@ -31,7 +29,15 @@ export async function POST(request: Request) {
             product_data: {
               name: artwork.title,
               description: artwork.description,
-              images: artwork.images?.map((img: any) => img.url) || [],
+              images: artwork.images
+                ? artwork.images
+                  .filter((img): img is { url: string } =>
+                    typeof img === 'object' &&
+                    img !== null &&
+                    'url' in img &&
+                    typeof img.url === 'string')
+                  .map(img => img.url)
+                : [],
             },
             unit_amount: Math.round(artwork.price * 100),
           },

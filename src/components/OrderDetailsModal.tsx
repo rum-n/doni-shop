@@ -17,7 +17,7 @@ interface OrderItem {
     title: string;
     medium: string;
     year: number;
-    images: any[];
+    images: { url: string }[];
   };
 }
 

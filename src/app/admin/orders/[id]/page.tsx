@@ -6,7 +6,7 @@ import AdminNavbar from '@/components/AdminNavbar';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default async function OrderDetail(id: string) {
+export default async function OrderDetail({ id }: { id: string }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {

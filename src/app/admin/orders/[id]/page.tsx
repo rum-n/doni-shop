@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { redirect, useParams } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -6,8 +6,11 @@ import AdminNavbar from '@/components/AdminNavbar';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default async function OrderDetail({ id }: { id: string }) {
+export default async function OrderDetail() {
   const session = await getServerSession(authOptions);
+
+  const params = useParams();
+  const id = params.id as string;
 
   if (!session) {
     redirect('/login');

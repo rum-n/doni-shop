@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
+import { BuyButton } from '@/components/BuyButton';
 
 export default function ArtworkDetail() {
   const params = useParams();
@@ -169,12 +170,7 @@ export default function ArtworkDetail() {
 
             {artwork.inStock && (
               <div className="mt-8">
-                <Link
-                  href={`/checkout?artwork=${artwork.id}`}
-                  className="block w-full md:w-auto text-center bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
-                >
-                  Purchase This Artwork
-                </Link>
+                <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
                 <p className="text-sm text-gray-500 mt-2">
                   Secure checkout • Shipping available worldwide
                 </p>

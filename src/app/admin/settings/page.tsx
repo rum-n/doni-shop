@@ -28,6 +28,7 @@ export default function SiteSettings() {
   const [successMessage, setSuccessMessage] = useState('');
   const [editorLoaded, setEditorLoaded] = useState(false);
   const [homepageContent, setHomepageContent] = useState('');
+  const [currentHomepageContent, setCurrentHomepageContent] = useState('');
 
   useEffect(() => {
     // Fetch current hero image
@@ -36,6 +37,7 @@ export default function SiteSettings() {
         const response = await fetch('/api/settings/hero-image');
         const data = await response.json();
         setCurrentHeroImage(data.imageUrl);
+        setHomepageContent(data.homepageContent.value.content);
       } catch (error) {
         console.error('Error fetching hero image:', error);
       }

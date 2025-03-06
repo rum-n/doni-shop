@@ -12,6 +12,7 @@
   "dependencies": {
     "@mdxeditor/editor": "^3.25.0",
     "@prisma/client": "^6.4.1",
+    "@stripe/stripe-js": "^5.9.2",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.5.1",
     "firebase": "^11.4.0",
@@ -21,6 +22,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.0.1",
+    "stripe": "^17.7.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

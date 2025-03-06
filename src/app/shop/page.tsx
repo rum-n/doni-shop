@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
+import { Button } from '@mdxeditor/editor';
+import { BuyButton } from '@/components/BuyButton';
 
 export default function Shop() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -165,22 +167,18 @@ export default function Shop() {
                         <h3 className="text-xl font-semibold">{artwork.title}</h3>
                         <p className="text-gray-600">{artwork.medium}, {artwork.year}</p>
                         <p className="text-lg font-bold mt-2">${artwork.price}</p>
-                        <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                        <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full">
                           <Link
                             href={`/artwork/${artwork.slug}`}
-                            className="text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition"
+                            className="text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition w-50"
                           >
                             Виж повече
                           </Link>
-                          <Link
-                            href={`/checkout?artwork=${artwork.id}`}
-                            className="text-center bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                          >
-                            Купи
-                          </Link>
+                          <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
                         </div>
                       </div>
                     </div>
+
                   ))}
                 </div>
               </>

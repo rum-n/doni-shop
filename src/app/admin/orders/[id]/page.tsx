@@ -1,5 +1,3 @@
-'use client';
-
 import { redirect, useParams } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -8,18 +6,15 @@ import AdminNavbar from '@/components/AdminNavbar';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default async function OrderDetail() {
+export default async function OrderDetail({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-
-  const params = useParams();
-  const id = params.id as string;
 
   if (!session) {
     redirect('/login');
   }
 
   const order = await db.order.findUnique({
-    where: { id },
+    where: { id: params.id },
     include: {
       customer: true,
       items: {

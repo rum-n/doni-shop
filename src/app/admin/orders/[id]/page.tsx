@@ -6,7 +6,14 @@ import AdminNavbar from '@/components/AdminNavbar';
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default async function OrderDetail({ params }: { params: { id: string } }) {
+interface OrderDetailsProps {
+  params: {
+    id: string;
+  };
+}
+
+
+export default async function OrderDetail({ params }: OrderDetailsProps) {
   const session = await getServerSession(authOptions);
 
   if (!session) {

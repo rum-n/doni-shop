@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
-import { BuyButton } from '@/components/BuyButton';
+import BuyButton from '@/components/BuyButton';
 
 export default function Shop() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);

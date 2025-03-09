@@ -6,6 +6,12 @@ export async function POST(request: Request) {
   try {
     const { artworkId } = await request.json();
 
+    // Get the host from the request headers for URL construction
+    const { headers } = request;
+    const host = headers.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+
     // Fetch artwork details
     const artwork = await db.artwork.findUnique({
       where: { id: artworkId },
@@ -19,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Artwork is not available for purchase' }, { status: 400 });
     }
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session - omit images entirely for now
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -28,16 +34,8 @@ export async function POST(request: Request) {
             currency: 'eur',
             product_data: {
               name: artwork.title,
-              description: artwork.description,
-              images: artwork.images
-                ? artwork.images
-                  .filter((img): img is { url: string } =>
-                    typeof img === 'object' &&
-                    img !== null &&
-                    'url' in img &&
-                    typeof img.url === 'string')
-                  .map(img => img.url)
-                : [],
+              description: artwork.description || '',
+              // Omitting images to avoid URL issues
             },
             unit_amount: Math.round(artwork.price * 100),
           },
@@ -45,8 +43,8 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/artwork/${artwork.slug}`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/artwork/${artwork.slug}`,
       metadata: {
         artworkId: artwork.id,
       },
@@ -56,7 +54,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Checkout error:', error);
     return NextResponse.json(
-      { message: 'Error creating checkout session' },
+      { message: 'Error creating checkout session', error: (error as Error).message },
       { status: 500 }
     );
   }

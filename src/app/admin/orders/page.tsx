@@ -128,7 +128,6 @@ export default function AdminOrders() {
         )}
       </div>
 
-      {/* Order Details Modal */}
       {selectedOrderId && (
         <OrderDetailsModal
           orderId={selectedOrderId}

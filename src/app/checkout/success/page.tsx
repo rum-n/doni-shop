@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function CheckoutSuccess() {
+// Create a separate component that uses useSearchParams
+function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [orderDetails, setOrderDetails] = useState(null);
@@ -29,8 +30,8 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="container mx-auto px-4 py-16 text-center">
-      <h1 className="text-3xl font-bold mb-4">Благодаря за вашата поръчка!</h1>
-      <p className="text-xl mb-8">Вашата поръчка е успешно обработена.</p>
+      <h1 className="text-3xl font-bold mb-4">Thank You for Your Purchase!</h1>
+      <p className="text-xl mb-8">Your order has been successfully processed.</p>
 
       {loading ? (
         <div className="flex justify-center">
@@ -39,7 +40,7 @@ export default function CheckoutSuccess() {
       ) : (
         orderDetails && (
           <div className="mb-8">
-            <p>Детайлите на вашата поръчка са изпратени на вашият имейл.</p>
+            <p>Your order details have been sent to your email.</p>
           </div>
         )
       )}
@@ -49,9 +50,26 @@ export default function CheckoutSuccess() {
           href="/gallery"
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md"
         >
-          Разгледайте още творби
+          Continue Shopping
         </Link>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense
+export default function CheckoutSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold mb-4">Thank You for Your Purchase!</h1>
+        <p className="text-xl mb-8">Loading your order details...</p>
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }

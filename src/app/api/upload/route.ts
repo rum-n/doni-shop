@@ -10,6 +10,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+interface CloudinaryUploadResult {
+  secure_url: string;
+  public_id: string;
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -41,8 +46,8 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      url: (result as any).secure_url,
-      public_id: (result as any).public_id
+      url: (result as CloudinaryUploadResult).secure_url,
+      public_id: (result as CloudinaryUploadResult).public_id
     });
   } catch (error) {
     console.error('Upload error:', error);

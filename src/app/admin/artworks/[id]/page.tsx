@@ -217,7 +217,7 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  URL-friendly version of the title (e.g., "blue-mountains-painting")
+                  URL-friendly version of the title (e.g., &quot;blue-mountains-painting&quot;)
                 </p>
               </div>
 

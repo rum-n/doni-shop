@@ -10,7 +10,7 @@ export default async function ManageArtworks() {
 
   // Redirect if not authenticated
   if (!session) {
-    redirect('/admin/login');
+    redirect('/login');
   }
 
   // Fetch artworks from database

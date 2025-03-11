@@ -8,22 +8,7 @@ import AdminNavbar from '@/components/AdminNavbar';
 import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import ImageUploader from '@/components/ImageUploader';
-
-interface ArtworkFormData {
-  title: string;
-  slug: string;
-  description: string;
-  price: number;
-  medium: string;
-  year: number;
-  dimensions: {
-    width: number;
-    height: number;
-  };
-  inStock: boolean;
-  featured: boolean;
-  images: { url: string; alt?: string }[];
-}
+import { ArtworkFormData } from '@/types/Artwork';
 
 export default function EditArtwork({ params }: { params: { id: string } }) {
   const [formData, setFormData] = useState<ArtworkFormData>({
@@ -33,7 +18,9 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
     price: 0,
     medium: '',
     year: new Date().getFullYear(),
-    dimensions: { width: 0, height: 0 },
+    width: 0,
+    height: 0,
+    unit: 'cm',
     inStock: true,
     featured: false,
     images: [],
@@ -89,11 +76,7 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
       // Only handle dimensions since that's our known nested object
       if (parent === 'dimensions' && (child === 'width' || child === 'height')) {
         setFormData({
-          ...formData,
-          dimensions: {
-            ...formData.dimensions,
-            [child]: type === 'number' ? Number(value) : value,
-          },
+          ...formData
         });
       }
     } else if (type === 'checkbox') {
@@ -115,6 +98,11 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
   };
 
   const handleImageUpload = (url: string) => {
+    if (formData.images.length >= 3) {
+      toast.error('Maximum of 3 images allowed per artwork');
+      return;
+    }
+
     setFormData({
       ...formData,
       images: [...formData.images, { url, alt: formData.title }],
@@ -280,7 +268,7 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
                     type="number"
                     id="dimensions.width"
                     name="dimensions.width"
-                    value={formData.dimensions.width}
+                    value={formData.width}
                     onChange={handleChange}
                     min="0"
                     step="0.1"
@@ -296,7 +284,7 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
                     type="number"
                     id="dimensions.height"
                     name="dimensions.height"
-                    value={formData.dimensions.height}
+                    value={formData.height}
                     onChange={handleChange}
                     min="0"
                     step="0.1"
@@ -354,9 +342,10 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Images
+                  Images ({formData.images.length}/3)
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+
+                <div className="grid grid-cols-3 gap-4 mb-4">
                   {formData.images.map((image, index) => (
                     <div key={index} className="relative rounded-md overflow-hidden h-40 bg-gray-100">
                       <Image
@@ -365,21 +354,67 @@ export default function EditArtwork({ params }: { params: { id: string } }) {
                         fill
                         className="object-cover"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
-                        aria-label="Remove image"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
+                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-opacity flex items-center justify-center opacity-0 hover:opacity-100">
+                        <div className="flex space-x-2">
+                          {index > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = [...formData.images];
+                                [newImages[index - 1], newImages[index]] = [newImages[index], newImages[index - 1]];
+                                setFormData({ ...formData, images: newImages });
+                              }}
+                              className="bg-white text-gray-800 p-1 rounded-full hover:bg-gray-200"
+                              aria-label="Move left"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                            aria-label="Remove image"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+
+                          {index < formData.images.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newImages = [...formData.images];
+                                [newImages[index], newImages[index + 1]] = [newImages[index + 1], newImages[index]];
+                                setFormData({ ...formData, images: newImages });
+                              }}
+                              className="bg-white text-gray-800 p-1 rounded-full hover:bg-gray-200"
+                              aria-label="Move right"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
+
+                  {formData.images.length < 3 && (
+                    <div className="rounded-md overflow-hidden h-40 bg-gray-100">
+                      <ImageUploader onUploadComplete={handleImageUpload} />
+                    </div>
+                  )}
                 </div>
 
-                <ImageUploader onUploadComplete={handleImageUpload} />
+                <p className="text-sm text-gray-500">
+                  Add up to 3 images of the artwork. The first image will be the main image shown in listings.
+                </p>
               </div>
             </div>
           </div>

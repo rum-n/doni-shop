@@ -16,3 +16,18 @@ export interface Artwork {
   featured: boolean;
   createdAt: Date;
 }
+
+export interface ArtworkFormData {
+  title: string;
+  slug: string;
+  description: string;
+  price: number;
+  medium: string;
+  year: number;
+  width: number;
+  height: number;
+  unit: string;
+  inStock: boolean;
+  featured: boolean;
+  images: { url: string; alt?: string }[];
+}

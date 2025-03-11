@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
 import BuyButton from '@/components/BuyButton';
+import ImageGallery from '@/components/ImageGallery';
 
 export default function ArtworkDetail() {
   const params = useParams();
@@ -83,13 +84,14 @@ export default function ArtworkDetail() {
           <div className="artwork-images">
             <div className="relative h-96 md:h-[500px] mb-4 rounded-lg overflow-hidden shadow-md">
               {artwork.images && artwork.images.length > 0 ? (
-                <Image
-                  src={artwork.images[selectedImage].url}
-                  alt={artwork.images[selectedImage].alt || artwork.title}
-                  fill
-                  style={{ objectFit: 'contain' }}
-                  className="bg-gray-100"
-                />
+                // <Image
+                //   src={artwork.images[selectedImage].url}
+                //   alt={artwork.images[selectedImage].alt || artwork.title}
+                //   fill
+                //   style={{ objectFit: 'contain' }}
+                //   className="bg-gray-100"
+                // />
+                <ImageGallery images={artwork.images} title={artwork.title} />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                   <span className="text-gray-400">No image available</span>

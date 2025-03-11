@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import AdminNavbar from '@/components/AdminNavbar';
+import Image from 'next/image';
+import ImageUploader from '@/components/ImageUploader';
+import { toast } from 'react-hot-toast';
+import { ArtworkFormData } from '@/types/Artwork';
 
 export default function NewArtwork() {
   const { status } = useSession();
@@ -13,21 +17,21 @@ export default function NewArtwork() {
     router.push('/admin/login');
   }
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ArtworkFormData>({
     title: '',
     slug: '',
     description: '',
-    price: '',
+    price: 0,
     medium: '',
     year: new Date().getFullYear(),
-    width: '',
-    height: '',
+    width: 0,
+    height: 0,
     unit: 'in',
     inStock: true,
     featured: false,
+    images: [],
   });
 
-  const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -56,11 +60,35 @@ export default function NewArtwork() {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const fileArray = Array.from(e.target.files);
-      setImages(fileArray);
+  const handleImageUpload = (url: string) => {
+    if (formData.images.length >= 3) {
+      toast.error('Maximum of 3 images allowed per artwork');
+      return;
     }
+
+    setFormData({
+      ...formData,
+      images: [...formData.images, { url, alt: formData.title }],
+    });
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = [...formData.images];
+    newImages.splice(index, 1);
+    setFormData({
+      ...formData,
+      images: newImages,
+    });
+  };
+
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    const newImages = [...formData.images];
+    const [movedImage] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, movedImage);
+    setFormData({
+      ...formData,
+      images: newImages,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,8 +103,8 @@ export default function NewArtwork() {
         formDataToSend.append(key, value.toString());
       });
 
-      images.forEach((image, index) => {
-        formDataToSend.append(`image-${index}`, image);
+      formData.images.forEach((image, index) => {
+        formDataToSend.append(`image-${index}`, image.url);
       });
 
       const response = await fetch('/api/artwork', {
@@ -245,18 +273,67 @@ export default function NewArtwork() {
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="images" className="block text-gray-700 mb-2">Images *</label>
-              <input
-                type="file"
-                id="images"
-                name="images"
-                onChange={handleImageChange}
-                multiple
-                accept="image/*"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
-              <p className="text-sm text-gray-500 mt-1">Upload one or more images of the artwork</p>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Images ({formData.images.length}/3)
+              </label>
+
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {formData.images.map((image, index) => (
+                  <div key={index} className="relative rounded-md overflow-hidden h-40 bg-gray-100">
+                    <Image
+                      src={image.url}
+                      alt={image.alt || formData.title}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-1 flex justify-between text-white">
+                      <div className="flex space-x-2">
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => reorderImages(index, index - 1)}
+                            className="text-white hover:text-blue-300"
+                            aria-label="Move left"
+                          >
+                            ←
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="text-white hover:text-red-300"
+                          aria-label="Remove image"
+                        >
+                          ×
+                        </button>
+
+                        {index < formData.images.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => reorderImages(index, index + 1)}
+                            className="text-white hover:text-blue-300"
+                            aria-label="Move right"
+                          >
+                            →
+                          </button>
+                        )}
+                      </div>
+                      {index === 0 && <span className="text-xs">Main</span>}
+                    </div>
+                  </div>
+                ))}
+
+                {formData.images.length < 3 && (
+                  <div className="h-40">
+                    <ImageUploader onUploadComplete={handleImageUpload} />
+                  </div>
+                )}
+              </div>
+
+              <p className="text-sm text-gray-500">
+                Add up to 3 images. The first image will be shown in gallery listings.
+              </p>
             </div>
 
             <div className="flex items-center">

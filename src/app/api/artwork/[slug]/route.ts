@@ -1,45 +1,36 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { authOptions } from '@/lib/auth';
 import { getServerSession } from 'next-auth';
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const url = new URL(request.url);
+  const pathParts = url.pathname.split('/');
+  const idFromPath = pathParts[pathParts.length - 1];
+
+  const artworkId = params?.id || idFromPath;
+
+  if (!artworkId) {
+    return NextResponse.json({ message: 'Artwork ID is required' }, { status: 400 });
+  }
+
   try {
-    const slug = (await params).slug;
-    console.log(`Attempting to fetch artwork with slug: "${slug}"`);
-
-    if (!slug) {
-      return NextResponse.json(
-        { message: 'Artwork slug is required' },
-        { status: 400 }
-      );
-    }
-
     const artwork = await db.artwork.findUnique({
-      where: { slug },
+      where: { id: artworkId },
     });
 
     if (!artwork) {
-      return NextResponse.json(
-        { message: 'Artwork not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: 'Artwork not found' }, { status: 404 });
     }
 
     return NextResponse.json({ artwork });
   } catch (error) {
-    // Log detailed error information
     console.error('Error fetching artwork:', error);
-    console.error('Error details:', {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
-
     return NextResponse.json(
-      {
-        message: 'An error occurred while fetching the artwork',
-        error: error instanceof Error ? error.message : String(error)
-      },
+      { message: 'Error fetching artwork', details: String(error) },
       { status: 500 }
     );
   }

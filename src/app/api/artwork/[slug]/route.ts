@@ -38,7 +38,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -59,7 +59,7 @@ export async function PUT(
 
     // Check if artwork exists
     const existingArtwork = await db.artwork.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!existingArtwork) {
@@ -71,7 +71,7 @@ export async function PUT(
       const slugExists = await db.artwork.findFirst({
         where: {
           slug: body.slug,
-          id: { not: params.id },
+          id: { not: (await params).id },
         },
       });
 
@@ -85,7 +85,7 @@ export async function PUT(
 
     // Update artwork
     const updatedArtwork = await db.artwork.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         title: body.title,
         slug: body.slug,
@@ -111,8 +111,8 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -123,7 +123,7 @@ export async function DELETE(
 
     // Check if artwork exists
     const existingArtwork = await db.artwork.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     if (!existingArtwork) {
@@ -135,7 +135,7 @@ export async function DELETE(
       where: {
         items: {
           some: {
-            artworkId: params.id,
+            artworkId: (await params).id,
           },
         },
       },
@@ -150,7 +150,7 @@ export async function DELETE(
 
     // Delete artwork
     await db.artwork.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: 'Artwork deleted successfully' });

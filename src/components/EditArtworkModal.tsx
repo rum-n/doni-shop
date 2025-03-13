@@ -73,7 +73,7 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
           try {
             const errorData = JSON.parse(errorText);
             throw new Error(errorData.message || 'Failed to fetch artwork');
-          } catch (jsonError) {
+          } catch {
             throw new Error(`Failed to fetch artwork: ${response.status} ${response.statusText}`);
           }
         }

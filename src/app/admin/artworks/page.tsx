@@ -17,7 +17,7 @@ export default function ManageArtworks() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
     if (status === 'unauthenticated') {

@@ -5,13 +5,13 @@ import { getServerSession } from 'next-auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const url = new URL(request.url);
   const pathParts = url.pathname.split('/');
   const idFromPath = pathParts[pathParts.length - 1];
 
-  const artworkId = params?.id || idFromPath;
+  const artworkId = (await params).id || idFromPath;
 
   if (!artworkId) {
     return NextResponse.json({ message: 'Artwork ID is required' }, { status: 400 });

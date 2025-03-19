@@ -6,11 +6,13 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { Artwork } from '@/types/Artwork';
 import ReactMarkdown from 'react-markdown';
+import { useTranslations } from 'next-intl';
 
 export default function Home() {
   const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([]);
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [homepageContent, setHomepageContent] = useState<string | null>(null);
+  const t = useTranslations('HomePage');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,13 +78,13 @@ export default function Home() {
                 href="/gallery"
                 className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition"
               >
-                Галерия
+                {t('buttons.gallery')}
               </Link>
               <Link
                 href="/shop"
                 className="bg-gray-800 text-white px-6 py-3 rounded-md hover:bg-gray-900 transition"
               >
-                Онлайн магазин
+                {t('buttons.shop')}
               </Link>
             </div>
           </div>

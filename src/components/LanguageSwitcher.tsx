@@ -1,15 +1,14 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const LANGUAGE_STORAGE_KEY = 'userLanguagePreference';
 
 export default function LanguageSwitcher() {
-  const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentLocale, setCurrentLocale] = useState('en'); // Default to English
+  const { i18n } = useTranslation();
 
   const languages = [
     { code: 'en', name: 'EN' },
@@ -26,6 +25,10 @@ export default function LanguageSwitcher() {
 
     if (savedLocale && languages.some(lang => lang.code === savedLocale)) {
       setCurrentLocale(savedLocale);
+      // Try to change i18n language if available
+      if (i18n && typeof i18n.changeLanguage === 'function') {
+        i18n.changeLanguage(savedLocale);
+      }
       return;
     }
 
@@ -47,11 +50,23 @@ export default function LanguageSwitcher() {
 
         // Also store this initial detected preference
         localStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLocale);
+
+        // Try to change i18n language if available
+        if (i18n && typeof i18n.changeLanguage === 'function') {
+          i18n.changeLanguage(detectedLocale);
+        }
       }
     };
 
     detectBrowserLocale();
-  }, []);
+  }, [i18n]);
+
+  // Update currentLocale when i18n language changes
+  useEffect(() => {
+    if (i18n && i18n.language) {
+      setCurrentLocale(i18n.language);
+    }
+  }, [i18n?.language]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -65,6 +80,11 @@ export default function LanguageSwitcher() {
     // Save to localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
+    }
+
+    // Change i18n language if available
+    if (i18n && typeof i18n.changeLanguage === 'function') {
+      i18n.changeLanguage(locale);
     }
   };
 
@@ -84,9 +104,7 @@ export default function LanguageSwitcher() {
         <div className="absolute right-0 mt-2 w-20 bg-white rounded-md shadow-lg z-100">
           <div className="py-1">
             {languages.map((lang) => (
-              <Link
-                href={pathname}
-                locale={lang.code}
+              <button
                 key={lang.code}
                 onClick={() => handleLocaleChange(lang.code)}
                 className={`block px-4 py-2 text-sm cursor-pointer ${currentLocale === lang.code
@@ -95,7 +113,7 @@ export default function LanguageSwitcher() {
                   } w-full text-left cursor-pointer`}
               >
                 {lang.name}
-              </Link>
+              </button>
             ))}
           </div>
         </div>

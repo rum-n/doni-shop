@@ -5,22 +5,30 @@ import { getServerSession } from 'next-auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   const url = new URL(request.url);
   const pathParts = url.pathname.split('/');
-  const idFromPath = pathParts[pathParts.length - 1];
+  const slugFromPath = pathParts[pathParts.length - 1];
 
-  const artworkId = (await params).id || idFromPath;
+  const slug = (await params).slug || slugFromPath;
 
-  if (!artworkId) {
-    return NextResponse.json({ message: 'Artwork ID is required' }, { status: 400 });
+  if (!slug) {
+    return NextResponse.json({ message: 'Artwork slug is required' }, { status: 400 });
   }
 
   try {
-    const artwork = await db.artwork.findUnique({
-      where: { id: artworkId },
+    // First try to find by slug
+    let artwork = await db.artwork.findUnique({
+      where: { slug },
     });
+
+    // If not found by slug, check if the provided value is an ID (MongoDB ObjectID)
+    if (!artwork && /^[0-9a-fA-F]{24}$/.test(slug)) {
+      artwork = await db.artwork.findUnique({
+        where: { id: slug },
+      });
+    }
 
     if (!artwork) {
       return NextResponse.json({ message: 'Artwork not found' }, { status: 404 });

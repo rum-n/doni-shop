@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface NavbarProps {
   currentPath: string;
@@ -59,6 +60,9 @@ export default function Navbar({ currentPath }: NavbarProps) {
               >
                 Онлайн магазин
               </Link>
+
+              {/* Language Switcher - Desktop */}
+              <LanguageSwitcher />
             </div>
           </div>
 
@@ -124,6 +128,36 @@ export default function Navbar({ currentPath }: NavbarProps) {
           >
             Shop
           </Link>
+
+          {/* For mobile, we'll use a simpler LanguageSwitcher */}
+          <div className="px-3 py-2">
+            <div className="flex space-x-4">
+              <Link
+                href={currentPath}
+                locale="bg"
+                className="px-3 py-1 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                BG
+              </Link>
+              <Link
+                href={currentPath}
+                locale="en"
+                className="px-3 py-1 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                EN
+              </Link>
+              <Link
+                href={currentPath}
+                locale="de"
+                className="px-3 py-1 rounded-md text-base font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                DE
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

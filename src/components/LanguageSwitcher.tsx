@@ -1,30 +1,105 @@
-import { useRouter } from 'next/router'
-import Link from 'next/link'
+'use client';
+
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+
+const LANGUAGE_STORAGE_KEY = 'userLanguagePreference';
 
 export default function LanguageSwitcher() {
-  const router = useRouter()
-  const { pathname, asPath, query, locale } = router
+  const pathname = usePathname();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [currentLocale, setCurrentLocale] = useState('en'); // Default to English
 
   const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'bg', name: 'Български' },
-    { code: 'de', name: 'Deutsch' },
-  ]
+    { code: 'en', name: 'EN' },
+    { code: 'bg', name: 'BG' },
+    { code: 'de', name: 'DE' },
+  ];
+
+  // Initialize locale from localStorage or browser settings
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // First check localStorage for saved preference
+    const savedLocale = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+
+    if (savedLocale && languages.some(lang => lang.code === savedLocale)) {
+      setCurrentLocale(savedLocale);
+      return;
+    }
+
+    // Fall back to browser locale detection if no saved preference
+    const detectBrowserLocale = () => {
+      if (navigator) {
+        // Get browser language (e.g., 'en-US', 'bg', etc.)
+        const browserLang = navigator.language || (navigator as any).userLanguage;
+
+        // Extract the base language code (e.g., 'en' from 'en-US')
+        const baseLang = browserLang.split('-')[0].toLowerCase();
+
+        // Check if we support this language
+        const isSupported = languages.some(lang => lang.code === baseLang);
+
+        // Set the locale (use browser's if supported, otherwise default to 'en')
+        const detectedLocale = isSupported ? baseLang : 'en';
+        setCurrentLocale(detectedLocale);
+
+        // Also store this initial detected preference
+        localStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLocale);
+      }
+    };
+
+    detectBrowserLocale();
+  }, []);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLocaleChange = (locale: string) => {
+    // Update state
+    setCurrentLocale(locale);
+    setIsDropdownOpen(false);
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
+    }
+  };
 
   return (
-    <div className="language-switcher">
-      {languages.map((lang) => (
-        <Link
-          href={{ pathname, query }}
-          as={asPath}
-          locale={lang.code}
-          key={lang.code}
-        >
-          <a className={locale === lang.code ? 'active' : ''}>
-            {lang.name}
-          </a>
-        </Link>
-      ))}
+    <div className="relative">
+      <button
+        onClick={toggleDropdown}
+        className="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+      >
+        <span>{currentLocale.toUpperCase()}</span>
+        <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isDropdownOpen && (
+        <div className="absolute right-0 mt-2 w-20 bg-white rounded-md shadow-lg z-100">
+          <div className="py-1">
+            {languages.map((lang) => (
+              <Link
+                href={pathname}
+                locale={lang.code}
+                key={lang.code}
+                onClick={() => handleLocaleChange(lang.code)}
+                className={`block px-4 py-2 text-sm cursor-pointer ${currentLocale === lang.code
+                  ? 'text-gray-900 bg-gray-100'
+                  : 'text-gray-700 hover:bg-gray-100'
+                  } w-full text-left cursor-pointer`}
+              >
+                {lang.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

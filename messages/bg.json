@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "buttons": {
+      "gallery": "Галерия",
+      "shop": "Онлайн магазин"
+    },
+    "title": "Featured"
+  }
+}

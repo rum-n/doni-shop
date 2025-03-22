@@ -3,6 +3,7 @@
     "buttons": {
       "gallery": "Gallery",
       "shop": "Shop"
-    }
+    },
+    "title": "Featured"
   }
 }

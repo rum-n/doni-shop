@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useRouter } from "next/router";
+import { useTranslations } from "next-intl";
 
 const LANGUAGE_STORAGE_KEY = "userLanguagePreference";
 
 export default function LanguageSwitcher() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentLocale, setCurrentLocale] = useState("en"); // Default to English
-  const { i18n } = useTranslation();
+  const router = useRouter();
+  const t = useTranslations();
 
   const languages = [
     { code: "en", name: "EN" },
@@ -25,10 +27,7 @@ export default function LanguageSwitcher() {
 
     if (savedLocale && languages.some((lang) => lang.code === savedLocale)) {
       setCurrentLocale(savedLocale);
-      // Try to change i18n language if available
-      if (i18n && typeof i18n.changeLanguage === "function") {
-        i18n.changeLanguage(savedLocale);
-      }
+      router.push(router.pathname, router.asPath, { locale: savedLocale });
       return;
     }
 
@@ -51,22 +50,12 @@ export default function LanguageSwitcher() {
         // Also store this initial detected preference
         localStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLocale);
 
-        // Try to change i18n language if available
-        if (i18n && typeof i18n.changeLanguage === "function") {
-          i18n.changeLanguage(detectedLocale);
-        }
+        router.push(router.pathname, router.asPath, { locale: detectedLocale });
       }
     };
 
     detectBrowserLocale();
-  }, [i18n]);
-
-  // Update currentLocale when i18n language changes
-  useEffect(() => {
-    if (i18n && i18n.language) {
-      setCurrentLocale(i18n.language);
-    }
-  }, [i18n?.language]);
+  }, [router]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -82,10 +71,8 @@ export default function LanguageSwitcher() {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
     }
 
-    // Change i18n language if available
-    if (i18n && typeof i18n.changeLanguage === "function") {
-      i18n.changeLanguage(locale);
-    }
+    // Change locale using next-intl
+    router.push(router.pathname, router.asPath, { locale });
   };
 
   return (

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import Navbar from '@/components/Navbar';
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import Navbar from "@/components/Navbar";
 
 interface ArtworkWithImages {
   id: string;
@@ -25,21 +25,21 @@ interface ArtworkWithImages {
 export default function Gallery() {
   const [artworks, setArtworks] = useState<ArtworkWithImages[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     const fetchArtworks = async () => {
       setIsLoading(true);
       try {
         // Fetch from API endpoint
-        const response = await fetch('/api/artwork?featured=true&inStock=true');
+        const response = await fetch("/api/artwork?featured=true&inStock=true");
         const data = await response.json();
 
         if (data.artworks) {
           setArtworks(data.artworks);
         }
       } catch (error) {
-        console.error('Error fetching artworks:', error);
+        console.error("Error fetching artworks:", error);
       } finally {
         setIsLoading(false);
       }
@@ -48,10 +48,10 @@ export default function Gallery() {
     fetchArtworks();
   }, []);
 
-  const filteredArtworks = artworks.filter(artwork => {
-    if (filter === 'all') return true;
-    if (filter === 'available') return artwork.inStock;
-    if (filter === 'sold') return !artwork.inStock;
+  const filteredArtworks = artworks.filter((artwork) => {
+    if (filter === "all") return true;
+    if (filter === "available") return artwork.inStock;
+    if (filter === "sold") return !artwork.inStock;
     return true;
   });
 
@@ -70,31 +70,34 @@ export default function Gallery() {
             <div className="inline-flex rounded-md shadow-sm" role="group">
               <button
                 type="button"
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${filter === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border border-gray-200`}
+                onClick={() => setFilter("all")}
+                className={`px-4 py-2 text-sm font-medium rounded-l-lg ${
+                  filter === "all"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                } border border-gray-200`}
               >
                 All Artworks
               </button>
               <button
                 type="button"
-                onClick={() => setFilter('available')}
-                className={`px-4 py-2 text-sm font-medium ${filter === 'available'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border-t border-b border-r border-gray-200`}
+                onClick={() => setFilter("available")}
+                className={`px-4 py-2 text-sm font-medium ${
+                  filter === "available"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                } border-t border-b border-r border-gray-200`}
               >
                 Available
               </button>
               <button
                 type="button"
-                onClick={() => setFilter('sold')}
-                className={`px-4 py-2 text-sm font-medium rounded-r-lg ${filter === 'sold'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-                  } border-t border-b border-r border-gray-200`}
+                onClick={() => setFilter("sold")}
+                className={`px-4 py-2 text-sm font-medium rounded-r-lg ${
+                  filter === "sold"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                } border-t border-b border-r border-gray-200`}
               >
                 Sold
               </button>
@@ -110,18 +113,23 @@ export default function Gallery() {
           <section className="artwork-grid">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredArtworks.map((artwork) => (
-                <div key={artwork.id} className="artwork-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                <div
+                  key={artwork.id}
+                  className="artwork-card border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                >
                   <div className="relative h-80">
                     {artwork.images && artwork.images[0] ? (
                       <Image
                         src={artwork.images[0].url}
                         alt={artwork.title}
                         fill
-                        style={{ objectFit: 'cover' }}
+                        style={{ objectFit: "cover" }}
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-400">No image available</span>
+                        <span className="text-gray-400">
+                          No image available
+                        </span>
                       </div>
                     )}
                     {artwork.inStock === false && (
@@ -136,7 +144,9 @@ export default function Gallery() {
 
             {filteredArtworks.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-xl text-gray-600">No artworks found matching your criteria.</p>
+                <p className="text-xl text-gray-600">
+                  No artworks found matching your criteria.
+                </p>
               </div>
             )}
           </section>

@@ -1,12 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { db } from '@/lib/db';
-import { uploadImage } from '@/lib/uploadImage';
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { uploadImage } from "@/lib/uploadImage";
+import { Artwork } from "@/types/Artwork";
 
-type QueryArtwork = {
-  featured?: boolean;
-  inStock?: boolean;
+type Dimensions = {
+  width: string | number;
+  height: string | number;
+  unit: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -15,38 +17,50 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
     // Parse form data
     const formData = await request.formData();
 
     // Extract text fields
-    const title = formData.get('title') as string;
-    const slug = formData.get('slug') as string;
-    const description = formData.get('description') as string;
-    const price = parseFloat(formData.get('price') as string);
-    const medium = formData.get('medium') as string;
-    const year = parseInt(formData.get('year') as string);
-    const width = parseFloat(formData.get('width') as string);
-    const height = parseFloat(formData.get('height') as string);
-    const unit = formData.get('unit') as string;
-    const inStock = formData.get('inStock') === 'true';
-    const featured = formData.get('featured') === 'true';
+    const title = formData.get("title") as string;
+    const slug = formData.get("slug") as string;
+    const description = formData.get("description") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const medium = formData.get("medium") as string;
+    const year = parseInt(formData.get("year") as string);
+    const width = parseFloat(formData.get("width") as string);
+    const height = parseFloat(formData.get("height") as string);
+    const unit = formData.get("unit") as string;
+    const inStock = formData.get("inStock") === "true";
+    const featured = formData.get("featured") === "true";
 
     // Validate required fields
-    if (!title || !slug || !description || isNaN(price) || !medium || isNaN(year) ||
-      isNaN(width) || isNaN(height) || !unit) {
-      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+    if (
+      !title ||
+      !slug ||
+      !description ||
+      isNaN(price) ||
+      !medium ||
+      isNaN(year) ||
+      isNaN(width) ||
+      isNaN(height) ||
+      !unit
+    ) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     // Process images
     const imageUrls = [];
 
     for (const [key, value] of formData.entries()) {
-      if (key.startsWith('image-') && value instanceof Blob) {
-        // Upload image to storage (e.g., S3, Cloudinary, etc.)
+      if (key.startsWith("image-") && value instanceof Blob) {
         const imageUrl = await uploadImage(value);
+        // Store the image URL without any locale prefix
         imageUrls.push({
           url: imageUrl,
           alt: title, // Default alt text
@@ -55,7 +69,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (imageUrls.length === 0) {
-      return NextResponse.json({ message: 'At least one image is required' }, { status: 400 });
+      return NextResponse.json(
+        { message: "At least one image is required" },
+        { status: 400 }
+      );
     }
 
     // Create artwork in database using Prisma
@@ -79,11 +96,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ artwork }, { status: 201 });
-
   } catch (error) {
-    console.error('Error creating artwork:', error);
+    console.error("Error creating artwork:", error);
     return NextResponse.json(
-      { message: 'An error occurred while creating the artwork' },
+      { message: "An error occurred while creating the artwork" },
       { status: 500 }
     );
   }
@@ -93,39 +109,45 @@ export async function GET(request: NextRequest) {
   try {
     // Get query parameters
     const { searchParams } = new URL(request.url);
-    const featured = searchParams.get('featured') === 'true';
-    const inStock = searchParams.get('inStock') === 'true';
+    const featured = searchParams.get("featured") === "true";
 
-    // Build query
-    const query: QueryArtwork = {};
+    const artworks = await db.artwork.findMany({
+      where: featured ? { featured: true } : undefined,
+      orderBy: { createdAt: "desc" },
+    });
 
-    if (featured !== null) {
-      query.featured = featured;
-    }
+    // Process artworks to ensure image URLs are absolute
+    const processedArtworks: Artwork[] = artworks.map((artwork) => ({
+      ...artwork,
+      dimensions:
+        typeof artwork.dimensions === "object" && artwork.dimensions !== null
+          ? {
+              width: String((artwork.dimensions as Dimensions).width || ""),
+              height: String((artwork.dimensions as Dimensions).height || ""),
+              unit: String((artwork.dimensions as Dimensions).unit || ""),
+            }
+          : { width: "", height: "", unit: "" },
+      images:
+        artwork.images?.map((image) => {
+          if (typeof image === "object" && image !== null && "url" in image) {
+            return {
+              url: (image.url as string).startsWith("http")
+                ? (image.url as string)
+                : `https://res.cloudinary.com/${
+                    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+                  }/${image.url as string}`,
+              alt: (image as { alt?: string }).alt || artwork.title,
+            };
+          }
+          return { url: "", alt: artwork.title };
+        }) || [],
+    }));
 
-    if (inStock !== null) {
-      query.inStock = inStock;
-    }
-
-    let artworks;
-
-    if (featured) {
-      artworks = await db.artwork.findMany({
-        where: { featured: true },
-        orderBy: { createdAt: 'desc' },
-      });
-    } else {
-      artworks = await db.artwork.findMany({
-        orderBy: { createdAt: 'desc' },
-      });
-    }
-
-    return NextResponse.json({ artworks });
-
+    return NextResponse.json({ artworks: processedArtworks });
   } catch (error) {
-    console.error('Error fetching artworks:', error);
+    console.error("Error fetching artworks:", error);
     return NextResponse.json(
-      { message: 'An error occurred while fetching artworks' },
+      { message: "An error occurred while fetching artworks" },
       { status: 500 }
     );
   }

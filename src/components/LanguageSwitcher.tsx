@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter, usePathname } from "next/navigation";
 
 const LANGUAGE_STORAGE_KEY = "userLanguagePreference";
 
@@ -9,11 +9,11 @@ export default function LanguageSwitcher() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentLocale, setCurrentLocale] = useState("en"); // Default to English
   const router = useRouter();
+  const pathname = usePathname();
 
   const languages = [
     { code: "en", name: "EN" },
     { code: "bg", name: "BG" },
-    { code: "de", name: "DE" },
   ];
 
   // Initialize locale from localStorage or browser settings
@@ -25,7 +25,8 @@ export default function LanguageSwitcher() {
 
     if (savedLocale && languages.some((lang) => lang.code === savedLocale)) {
       setCurrentLocale(savedLocale);
-      router.push(router.pathname, router.asPath, { locale: savedLocale });
+      const newPath = pathname.replace(/^\/[^\/]+/, `/${savedLocale}`);
+      router.push(newPath);
       return;
     }
 
@@ -48,12 +49,13 @@ export default function LanguageSwitcher() {
         // Also store this initial detected preference
         localStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLocale);
 
-        router.push(router.pathname, router.asPath, { locale: detectedLocale });
+        const newPath = pathname.replace(/^\/[^\/]+/, `/${detectedLocale}`);
+        router.push(newPath);
       }
     };
 
     detectBrowserLocale();
-  }, [router]);
+  }, [router, pathname]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -69,8 +71,9 @@ export default function LanguageSwitcher() {
       localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
     }
 
-    // Change locale using next-intl
-    router.push(router.pathname, router.asPath, { locale });
+    // Change locale by updating the path
+    const newPath = pathname.replace(/^\/[^\/]+/, `/${locale}`);
+    router.push(newPath);
   };
 
   return (

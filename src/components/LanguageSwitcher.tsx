@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useTranslations } from "next-intl";
 
 const LANGUAGE_STORAGE_KEY = "userLanguagePreference";
 
@@ -10,7 +9,6 @@ export default function LanguageSwitcher() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [currentLocale, setCurrentLocale] = useState("en"); // Default to English
   const router = useRouter();
-  const t = useTranslations();
 
   const languages = [
     { code: "en", name: "EN" },

@@ -95,7 +95,7 @@ export default function Home() {
         {/* Featured Works Section */}
         <section className="featured-works py-16 container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-8 text-center">
-            Избрани творби
+            {t("firstSectionTitle")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredArtworks &&
@@ -125,7 +125,7 @@ export default function Home() {
                       href={`/artwork/${artwork.slug}`}
                       className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                     >
-                      View Details
+                      {t("featuredArtworkCard.button")}
                     </Link>
                   </div>
                 </div>

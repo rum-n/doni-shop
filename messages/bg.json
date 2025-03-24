@@ -4,6 +4,31 @@
       "gallery": "Галерия",
       "shop": "Онлайн магазин"
     },
-    "title": "Featured"
+    "firstSectionTitle": "Избрани творби",
+    "featuredArtworkCard": {
+      "button": "Виж повече"
+    }
+  },
+  "GalleryPage": {
+    "title": "Галерия",
+    "description": "Разгледайте цялата колекция от оригинални творби.",
+    "filters": {
+      "all": "Всички творби",
+      "available": "Налични",
+      "sold": "Продадени"
+    }
+  },
+  "ShopPage": {
+    "sort": "Сортиране по"
+  },
+  "ArtworkPage": {
+    "buttons": {
+      "back": "Back to gallery"
+    }
+  },
+  "Navigation": {
+    "about": "За мен",
+    "gallery": "Галерия",
+    "shop": "Онлайн магазин"
   }
 }

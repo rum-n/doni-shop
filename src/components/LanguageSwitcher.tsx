@@ -7,7 +7,7 @@ const LANGUAGE_STORAGE_KEY = "userLanguagePreference";
 
 export default function LanguageSwitcher() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState("en"); // Default to English
+  const [currentLocale, setCurrentLocale] = useState("en");
   const router = useRouter();
   const pathname = usePathname();
 

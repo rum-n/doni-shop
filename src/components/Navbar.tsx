@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { useTranslations } from "next-intl";
 
 interface NavbarProps {
   currentPath: string;
@@ -10,6 +11,7 @@ interface NavbarProps {
 
 export default function Navbar({ currentPath }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const t = useTranslations("Navigation");
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -44,7 +46,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                     : "text-gray-600 hover:text-gray-900"
                 }
               >
-                За мен
+                {t("about")}
               </Link>
               <Link
                 href="/gallery"
@@ -54,7 +56,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                     : "text-gray-600 hover:text-gray-900"
                 }
               >
-                Галерия
+                {t("gallery")}
               </Link>
               <Link
                 href="/shop"
@@ -64,7 +66,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                     : "text-gray-600 hover:text-gray-900"
                 }
               >
-                Онлайн магазин
+                {t("shop")}
               </Link>
 
               {/* Language Switcher - Desktop */}

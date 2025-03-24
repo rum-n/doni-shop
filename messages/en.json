@@ -4,6 +4,31 @@
       "gallery": "Gallery",
       "shop": "Shop"
     },
-    "title": "Featured"
+    "firstSectionTitle": "Featured artworks",
+    "featuredArtworkCard": {
+      "button": "View details"
+    }
+  },
+  "GalleryPage": {
+    "title": "Art Gallery",
+    "description": "Explore the complete collection of original artworks.",
+    "filters": {
+      "all": "All artworks",
+      "available": "Available",
+      "sold": "Sold"
+    }
+  },
+  "ShopPage": {
+    "sort": "Sort by"
+  },
+  "ArtworkPage": {
+    "buttons": {
+      "back": "Back to gallery"
+    }
+  },
+  "Navigation": {
+    "about": "About me",
+    "gallery": "Gallery",
+    "shop": "Shop"
   }
 }

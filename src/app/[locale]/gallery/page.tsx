@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import { useTranslations } from "next-intl";
 
 interface ArtworkWithImages {
   id: string;
@@ -26,6 +27,7 @@ export default function Gallery() {
   const [artworks, setArtworks] = useState<ArtworkWithImages[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const t = useTranslations("GalleryPage");
 
   useEffect(() => {
     const fetchArtworks = async () => {
@@ -60,9 +62,9 @@ export default function Gallery() {
       <Navbar currentPath="/gallery" />
       <main className="container mx-auto px-4 py-8">
         <section className="gallery-header py-8">
-          <h1 className="text-4xl font-bold mb-4 text-center">Art Gallery</h1>
+          <h1 className="text-4xl font-bold mb-4 text-center">{t("title")}</h1>
           <p className="text-xl text-gray-600 mb-8 text-center">
-            Explore the complete collection of original artworks
+            {t("description")}
           </p>
 
           {/* Filter Controls */}
@@ -77,7 +79,7 @@ export default function Gallery() {
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 } border border-gray-200`}
               >
-                All Artworks
+                {t("filters.all")}
               </button>
               <button
                 type="button"
@@ -88,7 +90,7 @@ export default function Gallery() {
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 } border-t border-b border-r border-gray-200`}
               >
-                Available
+                {t("filters.available")}
               </button>
               <button
                 type="button"
@@ -99,7 +101,7 @@ export default function Gallery() {
                     : "bg-white text-gray-700 hover:bg-gray-100"
                 } border-t border-b border-r border-gray-200`}
               >
-                Sold
+                {t("filters.sold")}
               </button>
             </div>
           </div>

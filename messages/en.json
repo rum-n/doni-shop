@@ -47,5 +47,11 @@
     "about": "About me",
     "gallery": "Gallery",
     "shop": "Shop"
+  },
+  "AboutPage": {},
+  "BuyButton": {
+    "text": "Buy now",
+    "processing": "Processing...",
+    "soldOut": "Sold out"
   }
 }

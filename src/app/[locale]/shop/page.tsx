@@ -200,7 +200,7 @@ export default function Shop() {
                         <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full">
                           <Link
                             href={`/artwork/${artwork.slug}`}
-                            className="text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition w-50"
+                            className="text-center bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition w-50 flex justify-center items-center"
                           >
                             {t("seeMore")}
                           </Link>

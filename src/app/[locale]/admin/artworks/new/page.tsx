@@ -1,44 +1,57 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import AdminNavbar from '@/components/AdminNavbar';
-import Image from 'next/image';
-import ImageUploader from '@/components/ImageUploader';
-import { toast } from 'react-hot-toast';
-import { ArtworkFormData } from '@/types/Artwork';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import AdminNavbar from "@/components/AdminNavbar";
+import Image from "next/image";
+import ImageUploader from "@/components/ImageUploader";
+import { toast } from "react-hot-toast";
+import { ArtworkFormData } from "@/types/Artwork";
 
 export default function NewArtwork() {
   const { status } = useSession();
   const router = useRouter();
 
-  if (status === 'unauthenticated') {
-    router.push('/admin/login');
+  if (status === "unauthenticated") {
+    router.push("/admin/login");
   }
 
   const [formData, setFormData] = useState<ArtworkFormData>({
-    title: '',
-    slug: '',
-    description: '',
+    title: "",
+    slug: "",
+    description: { en: "", bg: "" },
     price: 0,
-    medium: '',
+    medium: "",
     year: new Date().getFullYear(),
     width: 0,
     height: 0,
-    unit: 'in',
+    unit: "in",
     inStock: true,
     featured: false,
     images: [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+    lang?: string
+  ) => {
     const { name, value, type } = e.target;
 
-    if (type === 'checkbox') {
+    if (name.startsWith("description-") && lang) {
+      setFormData({
+        ...formData,
+        description: {
+          ...formData.description,
+          [lang]: value,
+        },
+      });
+    } else if (type === "checkbox") {
       setFormData({
         ...formData,
         [name]: (e.target as HTMLInputElement).checked,
@@ -48,21 +61,23 @@ export default function NewArtwork() {
         ...formData,
         [name]: value,
       });
-    }
 
-    // Auto-generate slug from title
-    if (name === 'title') {
-      setFormData({
-        ...formData,
-        title: value,
-        slug: value.toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-'),
-      });
+      if (name === "title") {
+        setFormData({
+          ...formData,
+          title: value,
+          slug: value
+            .toLowerCase()
+            .replace(/[^\w\s]/gi, "")
+            .replace(/\s+/g, "-"),
+        });
+      }
     }
   };
 
   const handleImageUpload = (url: string) => {
     if (formData.images.length >= 3) {
-      toast.error('Maximum of 3 images allowed per artwork');
+      toast.error("Maximum of 3 images allowed per artwork");
       return;
     }
 
@@ -94,34 +109,39 @@ export default function NewArtwork() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setError('');
+    setError("");
 
     try {
       const formDataToSend = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        formDataToSend.append(key, value.toString());
+        if (key === "description") {
+          Object.entries(value).forEach(([lang, desc]) => {
+            formDataToSend.append(`description[${lang}]`, desc as string);
+          });
+        } else {
+          formDataToSend.append(key, value.toString());
+        }
       });
 
       formData.images.forEach((image, index) => {
         formDataToSend.append(`image-${index}`, image.url);
       });
 
-      const response = await fetch('/api/artwork', {
-        method: 'POST',
+      const response = await fetch("/api/artwork", {
+        method: "POST",
         body: formDataToSend,
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || 'Failed to create artwork');
+        throw new Error(data.message || "Failed to create artwork");
       }
 
-      router.push('/admin/artworks');
+      router.push("/admin/artworks");
       router.refresh();
-
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -132,18 +152,21 @@ export default function NewArtwork() {
       <AdminNavbar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Add New Artwork</h1>
-        {
-          error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )
-        }
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="title" className="block text-gray-700 mb-2">Title *</label>
+              <label htmlFor="title" className="block text-gray-700 mb-2">
+                Title *
+              </label>
               <input
                 type="text"
                 id="title"
@@ -156,7 +179,9 @@ export default function NewArtwork() {
             </div>
 
             <div>
-              <label htmlFor="slug" className="block text-gray-700 mb-2">Slug *</label>
+              <label htmlFor="slug" className="block text-gray-700 mb-2">
+                Slug *
+              </label>
               <input
                 type="text"
                 id="slug"
@@ -166,24 +191,38 @@ export default function NewArtwork() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">Used in the URL, auto-generated from title</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Used in the URL, auto-generated from title
+              </p>
             </div>
 
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-gray-700 mb-2">Description *</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                required
-              />
+              <label className="block text-gray-700 mb-2">Description *</label>
+              {Object.keys(formData.description).map((lang) => (
+                <div key={lang} className="mb-4">
+                  <label
+                    htmlFor={`description-${lang}`}
+                    className="block text-sm text-gray-600"
+                  >
+                    Description ({lang.toUpperCase()})
+                  </label>
+                  <textarea
+                    id={`description-${lang}`}
+                    name={`description-${lang}`}
+                    value={formData.description[lang]}
+                    onChange={(e) => handleChange(e, lang)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+              ))}
             </div>
 
             <div>
-              <label htmlFor="price" className="block text-gray-700 mb-2">Price ($) *</label>
+              <label htmlFor="price" className="block text-gray-700 mb-2">
+                Price ($) *
+              </label>
               <input
                 type="number"
                 id="price"
@@ -198,7 +237,9 @@ export default function NewArtwork() {
             </div>
 
             <div>
-              <label htmlFor="medium" className="block text-gray-700 mb-2">Medium *</label>
+              <label htmlFor="medium" className="block text-gray-700 mb-2">
+                Medium *
+              </label>
               <input
                 type="text"
                 id="medium"
@@ -211,7 +252,9 @@ export default function NewArtwork() {
             </div>
 
             <div>
-              <label htmlFor="year" className="block text-gray-700 mb-2">Year *</label>
+              <label htmlFor="year" className="block text-gray-700 mb-2">
+                Year *
+              </label>
               <input
                 type="number"
                 id="year"
@@ -227,7 +270,9 @@ export default function NewArtwork() {
 
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-1">
-                <label htmlFor="width" className="block text-gray-700 mb-2">Width *</label>
+                <label htmlFor="width" className="block text-gray-700 mb-2">
+                  Width *
+                </label>
                 <input
                   type="number"
                   id="width"
@@ -242,7 +287,9 @@ export default function NewArtwork() {
               </div>
 
               <div className="col-span-1">
-                <label htmlFor="height" className="block text-gray-700 mb-2">Height *</label>
+                <label htmlFor="height" className="block text-gray-700 mb-2">
+                  Height *
+                </label>
                 <input
                   type="number"
                   id="height"
@@ -257,7 +304,9 @@ export default function NewArtwork() {
               </div>
 
               <div className="col-span-1">
-                <label htmlFor="unit" className="block text-gray-700 mb-2">Unit *</label>
+                <label htmlFor="unit" className="block text-gray-700 mb-2">
+                  Unit *
+                </label>
                 <select
                   id="unit"
                   name="unit"
@@ -279,7 +328,10 @@ export default function NewArtwork() {
 
               <div className="grid grid-cols-3 gap-4 mb-4">
                 {formData.images.map((image, index) => (
-                  <div key={index} className="relative rounded-md overflow-hidden h-40 bg-gray-100">
+                  <div
+                    key={index}
+                    className="relative rounded-md overflow-hidden h-40 bg-gray-100"
+                  >
                     <Image
                       src={image.url}
                       alt={image.alt || formData.title}
@@ -332,7 +384,8 @@ export default function NewArtwork() {
               </div>
 
               <p className="text-sm text-gray-500">
-                Add up to 3 images. The first image will be shown in gallery listings.
+                Add up to 3 images. The first image will be shown in gallery
+                listings.
               </p>
             </div>
 
@@ -345,7 +398,9 @@ export default function NewArtwork() {
                 onChange={handleChange}
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
-              <label htmlFor="inStock" className="ml-2 block text-gray-700">Available for purchase</label>
+              <label htmlFor="inStock" className="ml-2 block text-gray-700">
+                Available for purchase
+              </label>
             </div>
 
             <div className="flex items-center">
@@ -357,14 +412,16 @@ export default function NewArtwork() {
                 onChange={handleChange}
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
-              <label htmlFor="featured" className="ml-2 block text-gray-700">Feature on homepage</label>
+              <label htmlFor="featured" className="ml-2 block text-gray-700">
+                Feature on homepage
+              </label>
             </div>
           </div>
 
           <div className="mt-8 flex justify-end">
             <button
               type="button"
-              onClick={() => router.push('/admin/artworks')}
+              onClick={() => router.push("/admin/artworks")}
               className="bg-gray-300 text-gray-800 px-4 py-2 rounded mr-4 hover:bg-gray-400"
             >
               Cancel
@@ -374,7 +431,7 @@ export default function NewArtwork() {
               disabled={isSubmitting}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : 'Save Artwork'}
+              {isSubmitting ? "Saving..." : "Save Artwork"}
             </button>
           </div>
         </form>

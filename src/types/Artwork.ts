@@ -20,7 +20,7 @@ export interface Artwork {
 export interface ArtworkFormData {
   title: string;
   slug: string;
-  description: string;
+  description: { [key: string]: string };
   price: number;
   medium: string;
   year: number;
@@ -29,5 +29,5 @@ export interface ArtworkFormData {
   unit: string;
   inStock: boolean;
   featured: boolean;
-  images: { url: string; alt?: string }[];
+  images: { url: string; alt: string }[];
 }

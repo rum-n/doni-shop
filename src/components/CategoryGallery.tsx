@@ -42,14 +42,14 @@ export default function CategoryGallery({
   }, [category]);
 
   return (
-    <div className="p-12">
+    <div className="p-4 lg:p-12">
       {/* Header */}
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl font-light text-slate-800 mb-6 tracking-wide">
+      <div className="mb-8 lg:mb-16 text-center">
+        <h1 className="text-3xl lg:text-5xl font-playfair-regular text-slate-800 mb-4 lg:mb-6 tracking-wide">
           {title}
         </h1>
         {description && (
-          <p className="text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg lg:text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed px-4">
             {description}
           </p>
         )}
@@ -62,7 +62,7 @@ export default function CategoryGallery({
         </div>
       ) : (
         /* Artwork Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-8">
           {artworks.map((artwork) => (
             <Link
               key={artwork.id}
@@ -70,7 +70,7 @@ export default function CategoryGallery({
               className="group block"
             >
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 border border-slate-200 hover:border-slate-300">
-                <div className="relative h-80">
+                <div className="relative h-64 sm:h-80">
                   {artwork.images && artwork.images[0] ? (
                     <Image
                       src={artwork.images[0].url}
@@ -91,8 +91,8 @@ export default function CategoryGallery({
                     </div>
                   )}
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-light text-slate-800 mb-2 group-hover:text-slate-600 transition-colors">
+                <div className="p-4 lg:p-6">
+                  <h3 className="text-lg lg:text-xl font-playfair-regular text-slate-800 mb-2 group-hover:text-slate-600 transition-colors">
                     {artwork.title}
                   </h3>
                   <p className="text-sm text-slate-600 mb-3 font-light">

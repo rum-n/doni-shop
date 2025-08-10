@@ -20,7 +20,7 @@ export default function MainLayout({ children, currentPath }: MainLayoutProps) {
         <TopNav currentPath={currentPath} />
 
         {/* Main Content */}
-        <main className="flex-1 pt-20 overflow-auto">{children}</main>
+        <main className="flex-1 pt-20 lg:pt-20 overflow-auto">{children}</main>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-// import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import MainLayout from "@/components/MainLayout";
@@ -38,10 +37,10 @@ export default function Home() {
 
   return (
     <MainLayout currentPath="/">
-      <div className="p-12">
+      <div className="p-4 lg:p-12">
         {/* Hero Section */}
-        <section className="relative h-96 rounded-3xl overflow-hidden mb-20">
-          {heroImage ? (
+        <section className="relative h-64 lg:h-96 rounded-2xl lg:rounded-3xl overflow-hidden mb-12 lg:mb-20">
+          {heroImage && (
             <div className="absolute inset-0">
               <Image
                 src={heroImage}
@@ -53,11 +52,9 @@ export default function Home() {
               {/* Overlay to ensure text is readable */}
               <div className="absolute inset-0 bg-black/30"></div>
             </div>
-          ) : (
-            <div></div>
           )}
 
-          <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-8">
+          <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 lg:px-8">
             {homepageContent && (
               <div className="text-white">
                 <ReactMarkdown>{homepageContent}</ReactMarkdown>

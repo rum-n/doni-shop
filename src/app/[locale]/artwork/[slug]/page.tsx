@@ -56,8 +56,10 @@ export default function ArtworkDetail() {
   if (error || !artwork) {
     return (
       <MainLayout currentPath={`/artwork/${slug}`}>
-        <div className="p-12 text-center">
-          <h1 className="text-2xl font-light text-slate-600 mb-4">Error</h1>
+        <div className="p-4 lg:p-12 text-center">
+          <h1 className="text-2xl font-playfair-regular text-slate-600 mb-4">
+            Error
+          </h1>
           <p className="mb-8 text-slate-500">{error || "Artwork not found"}</p>
         </div>
       </MainLayout>
@@ -66,8 +68,8 @@ export default function ArtworkDetail() {
 
   return (
     <MainLayout currentPath={`/artwork/${slug}`}>
-      <div className="p-12">
-        <div className="mb-12">
+      <div className="p-4 lg:p-12">
+        <div className="mb-8 lg:mb-12">
           <Link
             href={`/${artwork.category || "prints"}`}
             className="text-slate-600 hover:text-slate-800 flex items-center font-light tracking-wide"
@@ -93,10 +95,10 @@ export default function ArtworkDetail() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
           {/* Artwork Images */}
           <div className="artwork-images">
-            <div className="relative h-96 md:h-[600px] mb-6 rounded-2xl overflow-hidden shadow-lg bg-white/80 backdrop-blur-sm border border-slate-200">
+            <div className="relative h-80 lg:h-[600px] mb-6 rounded-2xl overflow-hidden shadow-lg bg-white/80 backdrop-blur-sm border border-slate-200">
               {artwork.images && artwork.images.length > 0 ? (
                 <ImageGallery images={artwork.images} title={artwork.title} />
               ) : (
@@ -125,7 +127,7 @@ export default function ArtworkDetail() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden ${
+                    className={`relative w-20 h-20 lg:w-24 lg:h-24 flex-shrink-0 rounded-xl overflow-hidden ${
                       selectedImage === index
                         ? "ring-2 ring-slate-400"
                         : "opacity-70 hover:opacity-100"
@@ -145,16 +147,16 @@ export default function ArtworkDetail() {
 
           {/* Artwork Details */}
           <div className="artwork-details">
-            <h1 className="text-4xl font-light text-slate-800 mb-4 tracking-wide">
+            <h1 className="text-3xl lg:text-4xl font-playfair-regular text-slate-800 mb-4 tracking-wide">
               {artwork.title}
             </h1>
 
-            <div className="flex items-center mb-6">
-              <p className="text-slate-600 mr-6 font-light">
+            <div className="flex flex-col sm:flex-row sm:items-center mb-6 space-y-2 sm:space-y-0">
+              <p className="text-slate-600 sm:mr-6 font-light">
                 {artwork.medium}, {artwork.year}
               </p>
               <span
-                className={`px-3 py-1 text-xs font-light rounded-full ${
+                className={`px-3 py-1 text-xs font-light rounded-full w-fit ${
                   artwork.inStock
                     ? "bg-green-100 text-green-700"
                     : "bg-slate-100 text-slate-700"
@@ -164,12 +166,12 @@ export default function ArtworkDetail() {
               </span>
             </div>
 
-            <p className="text-3xl font-light text-slate-700 mb-8">
+            <p className="text-2xl lg:text-3xl font-light text-slate-700 mb-8">
               ${artwork.price}
             </p>
 
-            <div className="prose max-w-none mb-10">
-              <h3 className="text-2xl font-light text-slate-800 mb-4">
+            <div className="prose max-w-none mb-8 lg:mb-10">
+              <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
                 Description
               </h3>
               <p className="text-slate-600 leading-relaxed font-light whitespace-pre-line">
@@ -177,14 +179,14 @@ export default function ArtworkDetail() {
               </p>
             </div>
 
-            <div className="mb-10">
-              <h3 className="text-2xl font-light text-slate-800 mb-4">
+            <div className="mb-8 lg:mb-10">
+              <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
                 Details
               </h3>
               <ul className="space-y-3">
                 {artwork.dimensions && (
-                  <li className="flex">
-                    <span className="font-light text-slate-700 w-32">
+                  <li className="flex flex-col sm:flex-row">
+                    <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
                       Dimensions:
                     </span>
                     <span className="text-slate-600 font-light">
@@ -193,16 +195,18 @@ export default function ArtworkDetail() {
                     </span>
                   </li>
                 )}
-                <li className="flex">
-                  <span className="font-light text-slate-700 w-32">
+                <li className="flex flex-col sm:flex-row">
+                  <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
                     Medium:
                   </span>
                   <span className="text-slate-600 font-light">
                     {artwork.medium}
                   </span>
                 </li>
-                <li className="flex">
-                  <span className="font-light text-slate-700 w-32">Year:</span>
+                <li className="flex flex-col sm:flex-row">
+                  <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
+                    Year:
+                  </span>
                   <span className="text-slate-600 font-light">
                     {artwork.year}
                   </span>
@@ -211,7 +215,7 @@ export default function ArtworkDetail() {
             </div>
 
             {artwork.inStock && (
-              <div className="mb-10">
+              <div className="mb-8 lg:mb-10">
                 <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
                 <p className="text-sm text-slate-500 mt-4 font-light">
                   Secure checkout • Shipping available worldwide
@@ -219,8 +223,8 @@ export default function ArtworkDetail() {
               </div>
             )}
 
-            <div className="pt-10 border-t border-slate-200">
-              <h3 className="text-2xl font-light text-slate-800 mb-4">
+            <div className="pt-8 lg:pt-10 border-t border-slate-200">
+              <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
                 Have Questions?
               </h3>
               <p className="mb-6 text-slate-600 font-light leading-relaxed">

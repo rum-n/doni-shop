@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 h1 {
@@ -14,4 +14,34 @@ h2 {
 
 h3 {
   @apply text-2xl font-bold mb-4;
+}
+
+/* Playfair Display font classes */
+.font-playfair {
+  font-family: var(--font-playfair), serif;
+}
+
+.font-playfair-light {
+  font-family: var(--font-playfair), serif;
+  font-weight: 300;
+}
+
+.font-playfair-regular {
+  font-family: var(--font-playfair), serif;
+  font-weight: 400;
+}
+
+.font-playfair-medium {
+  font-family: var(--font-playfair), serif;
+  font-weight: 500;
+}
+
+.font-playfair-semibold {
+  font-family: var(--font-playfair), serif;
+  font-weight: 600;
+}
+
+.font-playfair-bold {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
 }

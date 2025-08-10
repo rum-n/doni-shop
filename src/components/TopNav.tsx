@@ -16,29 +16,29 @@ export default function TopNav({ currentPath }: TopNavProps) {
 
   return (
     <div className="fixed top-0 right-0 left-0 h-20 bg-white/80 backdrop-blur-sm border-b border-slate-200 z-30">
-      <div className="flex justify-between items-center h-full px-8">
+      <div className="flex justify-between items-center h-full px-4 lg:px-8">
         {/* Artist Name - Left Side */}
         <div className="flex items-center">
           <Link
             href="/"
-            className="text-2xl uppercase font-light text-slate-800 tracking-wider hover:text-slate-600 transition-colors duration-300"
+            className="text-lg lg:text-2xl uppercase font-playfair-regular text-slate-800 tracking-wider hover:text-slate-600 transition-colors duration-300"
           >
             Doni Boyadzhieva
           </Link>
         </div>
 
         {/* Right Side - Language Switcher and Cart */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-3 lg:space-x-6">
           {/* Language Switcher */}
           <LanguageSwitcher />
 
           {/* Cart */}
           <Link
             href="/cart"
-            className="flex items-center space-x-3 px-6 py-3 rounded-full bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all duration-300 border border-slate-200"
+            className="flex items-center space-x-2 lg:space-x-3 px-3 lg:px-6 py-2 lg:py-3 rounded-full bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all duration-300 border border-slate-200"
           >
             <svg
-              className="w-5 h-5"
+              className="w-4 h-4 lg:w-5 lg:h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -51,7 +51,9 @@ export default function TopNav({ currentPath }: TopNavProps) {
                 d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01"
               />
             </svg>
-            <span className="font-light tracking-wide">{t("cart")}</span>
+            <span className="text-sm lg:text-base font-light tracking-wide hidden sm:inline">
+              {t("cart")}
+            </span>
           </Link>
         </div>
       </div>

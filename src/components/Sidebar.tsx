@@ -104,20 +104,20 @@ export default function Sidebar({ currentPath }: SidebarProps) {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed left-8 top-1/2 transform -translate-y-1/2 z-40">
-        <div className="flex flex-col space-y-4">
-          {/* Navigation Buttons */}
+      <div className="hidden lg:block fixed left-15 top-1/2 transform -translate-y-1/2 z-40">
+        <div className="flex flex-col space-y-6">
+          {/* Navigation Links */}
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`group relative flex items-center justify-center w-36 h-16 rounded-xl transition-all duration-300 ${
+              className={`group relative font-playfair-regular tracking-wide transition-all duration-300 hover:underline hover:underline-offset-6 ${
                 isActive(item.href)
-                  ? "bg-white/90 backdrop-blur-sm text-slate-800 shadow-lg border border-slate-200"
-                  : "bg-white/70 backdrop-blur-sm text-slate-600 hover:bg-white/90 hover:text-slate-800 hover:shadow-lg border border-slate-200 hover:border-slate-300"
+                  ? "text-slate-800 font-medium underline underline-offset-6"
+                  : "text-slate-600 hover:text-slate-800"
               }`}
             >
-              <span className="text-sm font-light tracking-wide group-hover:scale-110 transition-transform duration-300 text-center leading-tight">
+              <span className="text-lg group-hover:scale-105 transition-transform duration-300">
                 {t(item.label)}
               </span>
             </Link>

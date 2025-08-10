@@ -35,9 +35,9 @@ export default function TopNav({ currentPath }: TopNavProps) {
           {/* Cart */}
           <Link
             href="/cart"
-            className="flex items-center space-x-2 lg:space-x-3 px-3 lg:px-6 py-2 lg:py-3 rounded-full bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all duration-300 border border-slate-200"
+            className="flex items-center space-x-2 mr-20 lg:mr-0 lg:space-x-3 px-3 lg:px-6 py-2 lg:py-3 rounded-full bg-slate-50 text-slate-700 hover:bg-slate-100 transition-all duration-300 border border-slate-200"
           >
-            <span className="text-sm lg:text-base font-light tracking-wide hidden sm:inline">
+            <span className="text-sm lg:text-base font-light tracking-wide sm:inline">
               {t("cart")}
             </span>
           </Link>

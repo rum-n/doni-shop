@@ -6,14 +6,20 @@ import { useTranslations } from "next-intl";
 
 interface SidebarProps {
   currentPath: string;
+  onMenuStateChange?: (isOpen: boolean) => void;
 }
 
-export default function Sidebar({ currentPath }: SidebarProps) {
+export default function Sidebar({
+  currentPath,
+  onMenuStateChange,
+}: SidebarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const t = useTranslations("Navigation");
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    const newState = !isMenuOpen;
+    setIsMenuOpen(newState);
+    onMenuStateChange?.(newState);
   };
 
   const isActive = (path: string) => {
@@ -29,7 +35,7 @@ export default function Sidebar({ currentPath }: SidebarProps) {
   return (
     <>
       {/* Mobile Menu Button */}
-      <div className="lg:hidden fixed top-6 right-6 z-50">
+      <div className="lg:hidden fixed top-4 right-6 z-50">
         <button
           onClick={toggleMenu}
           className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-slate-200 flex items-center justify-center text-slate-800 hover:bg-white transition-all duration-300"

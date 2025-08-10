@@ -80,11 +80,11 @@ export default function LanguageSwitcher() {
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="flex items-center text-gray-600 hover:text-gray-900 focus:outline-none cursor-pointer"
+        className="flex items-center text-slate-600 hover:text-slate-800 focus:outline-none cursor-pointer px-4 py-2 rounded-full hover:bg-slate-50 transition-all duration-300 font-light tracking-wide"
       >
         <span>{currentLocale.toUpperCase()}</span>
         <svg
-          className="ml-1 w-4 h-4"
+          className="ml-2 w-4 h-4"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -93,24 +93,24 @@ export default function LanguageSwitcher() {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
+            strokeWidth={1.5}
             d="M19 9l-7 7-7-7"
           />
         </svg>
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-20 bg-white rounded-md shadow-lg z-100">
-          <div className="py-1">
+        <div className="absolute right-0 mt-2 w-24 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg z-100 border border-slate-200">
+          <div className="py-2">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => handleLocaleChange(lang.code)}
-                className={`block px-4 py-2 text-sm cursor-pointer ${
+                className={`block px-4 py-2 text-sm cursor-pointer w-full text-left transition-colors duration-200 font-light ${
                   currentLocale === lang.code
-                    ? "text-gray-900 bg-gray-100"
-                    : "text-gray-700 hover:bg-gray-100"
-                } w-full text-left cursor-pointer`}
+                    ? "text-slate-800 bg-slate-50"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                }`}
               >
                 {lang.name}
               </button>

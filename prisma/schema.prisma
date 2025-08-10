@@ -28,6 +28,7 @@ model Artwork {
   year        Int
   dimensions  Json // { width: number, height: number, unit: string }
   images      Json[] // Array of { url: string, alt: string }
+  category    String      @default("prints") // "prints", "linocut-stamps", "accessories"
   inStock     Boolean     @default(true)
   featured    Boolean     @default(false)
   createdAt   DateTime    @default(now())

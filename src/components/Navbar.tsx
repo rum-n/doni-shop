@@ -31,7 +31,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
               href="/"
               className="text-xl font-bold text-gray-800 uppercase"
             >
-              Violetta Boyadzhieva
+              Doni Boyadzhieva
             </Link>
           </div>
 

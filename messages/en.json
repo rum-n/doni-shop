@@ -1,8 +1,8 @@
 {
   "HomePage": {
     "buttons": {
-      "gallery": "Gallery",
-      "shop": "Shop"
+      "prints": "Prints",
+      "linocutStamps": "Linocut Stamps"
     },
     "firstSectionTitle": "Featured artworks",
     "featuredArtworkCard": {
@@ -44,11 +44,26 @@
     }
   },
   "Navigation": {
-    "about": "About me",
-    "gallery": "Gallery",
-    "shop": "Shop"
+    "prints": "Prints",
+    "linocutStamps": "Linocut Stamps",
+    "accessories": "Accessories",
+    "cart": "Cart"
   },
   "AboutPage": {},
+  "CategoryPages": {
+    "prints": {
+      "title": "Prints",
+      "description": "Discover our collection of beautiful prints"
+    },
+    "linocutStamps": {
+      "title": "Linocut Stamps",
+      "description": "Handcrafted linocut stamps for your creative projects"
+    },
+    "accessories": {
+      "title": "Accessories",
+      "description": "Art supplies and accessories for artists"
+    }
+  },
   "BuyButton": {
     "text": "Buy now",
     "processing": "Processing...",

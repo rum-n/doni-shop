@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import { Artwork } from '@/types/Artwork';
-import BuyButton from '@/components/BuyButton';
-import ImageGallery from '@/components/ImageGallery';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import MainLayout from "@/components/MainLayout";
+import { Artwork } from "@/types/Artwork";
+import BuyButton from "@/components/BuyButton";
+import ImageGallery from "@/components/ImageGallery";
 
 export default function ArtworkDetail() {
   const params = useParams();
@@ -25,14 +25,14 @@ export default function ArtworkDetail() {
         const response = await fetch(`/api/artwork/${slug}`);
 
         if (!response.ok) {
-          throw new Error('Artwork not found');
+          throw new Error("Artwork not found");
         }
 
         const data = await response.json();
         setArtwork(data.artwork);
       } catch (err) {
-        console.error('Error fetching artwork:', err);
-        setError('Failed to load artwork details');
+        console.error("Error fetching artwork:", err);
+        setError("Failed to load artwork details");
       } finally {
         setIsLoading(false);
       }
@@ -45,65 +45,74 @@ export default function ArtworkDetail() {
 
   if (isLoading) {
     return (
-      <>
-        <Navbar currentPath={`/artwork/${slug}`} />
-        <div className="container mx-auto px-4 py-16 flex justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <MainLayout currentPath={`/artwork/${slug}`}>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-300"></div>
         </div>
-      </>
+      </MainLayout>
     );
   }
 
   if (error || !artwork) {
     return (
-      <>
-        <Navbar currentPath={`/artwork/${slug}`} />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Error</h1>
-          <p className="mb-8">{error || 'Artwork not found'}</p>
+      <MainLayout currentPath={`/artwork/${slug}`}>
+        <div className="p-12 text-center">
+          <h1 className="text-2xl font-light text-slate-600 mb-4">Error</h1>
+          <p className="mb-8 text-slate-500">{error || "Artwork not found"}</p>
         </div>
-      </>
+      </MainLayout>
     );
   }
 
   return (
-    <>
-      <Navbar currentPath={`/artwork/${slug}`} />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Link href="/shop" className="text-blue-600 hover:underline flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+    <MainLayout currentPath={`/artwork/${slug}`}>
+      <div className="p-12">
+        <div className="mb-12">
+          <Link
+            href={`/${artwork.category || "prints"}`}
+            className="text-slate-600 hover:text-slate-800 flex items-center font-light tracking-wide"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clipRule="evenodd"
+              />
             </svg>
-            Back to Shop
+            Back to{" "}
+            {artwork.category === "linocut-stamps"
+              ? "Linocut Stamps"
+              : artwork.category === "accessories"
+              ? "Accessories"
+              : "Prints"}
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Artwork Images */}
           <div className="artwork-images">
-            <div className="relative h-96 md:h-[500px] mb-4 rounded-lg overflow-hidden shadow-md">
+            <div className="relative h-96 md:h-[600px] mb-6 rounded-2xl overflow-hidden shadow-lg bg-white/80 backdrop-blur-sm border border-slate-200">
               {artwork.images && artwork.images.length > 0 ? (
-                // <Image
-                //   src={artwork.images[selectedImage].url}
-                //   alt={artwork.images[selectedImage].alt || artwork.title}
-                //   fill
-                //   style={{ objectFit: 'contain' }}
-                //   className="bg-gray-100"
-                // />
                 <ImageGallery images={artwork.images} title={artwork.title} />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">No image available</span>
+                <div className="w-full h-full bg-gradient-to-br from-slate-50 to-gray-50 flex items-center justify-center">
+                  <span className="text-slate-400 font-light">
+                    No image available
+                  </span>
                 </div>
               )}
               {!artwork.inStock && (
-                <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-md text-lg font-bold">
+                <div className="absolute top-6 right-6 bg-slate-600 text-white px-4 py-2 rounded-full text-sm font-light">
                   SOLD
                 </div>
               )}
               {artwork.featured && (
-                <div className="absolute top-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-md text-sm font-bold">
+                <div className="absolute top-6 left-6 bg-slate-500 text-white px-4 py-2 rounded-full text-sm font-light">
                   FEATURED
                 </div>
               )}
@@ -111,19 +120,22 @@ export default function ArtworkDetail() {
 
             {/* Thumbnail Gallery */}
             {artwork.images && artwork.images.length > 1 && (
-              <div className="flex space-x-2 overflow-x-auto pb-2">
+              <div className="flex space-x-3 overflow-x-auto pb-2">
                 {artwork.images.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden ${selectedImage === index ? 'ring-2 ring-blue-500' : 'opacity-70'
-                      }`}
+                    className={`relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden ${
+                      selectedImage === index
+                        ? "ring-2 ring-slate-400"
+                        : "opacity-70 hover:opacity-100"
+                    }`}
                   >
                     <Image
                       src={image.url}
                       alt={image.alt || `${artwork.title} - view ${index + 1}`}
                       fill
-                      style={{ objectFit: 'cover' }}
+                      style={{ objectFit: "cover" }}
                     />
                   </button>
                 ))}
@@ -133,67 +145,98 @@ export default function ArtworkDetail() {
 
           {/* Artwork Details */}
           <div className="artwork-details">
-            <h1 className="text-3xl font-bold mb-2">{artwork.title}</h1>
+            <h1 className="text-4xl font-light text-slate-800 mb-4 tracking-wide">
+              {artwork.title}
+            </h1>
 
-            <div className="flex items-center mb-4">
-              <p className="text-gray-600 mr-4">{artwork.medium}, {artwork.year}</p>
-              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${artwork.inStock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                {artwork.inStock ? 'Available' : 'Sold'}
+            <div className="flex items-center mb-6">
+              <p className="text-slate-600 mr-6 font-light">
+                {artwork.medium}, {artwork.year}
+              </p>
+              <span
+                className={`px-3 py-1 text-xs font-light rounded-full ${
+                  artwork.inStock
+                    ? "bg-green-100 text-green-700"
+                    : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                {artwork.inStock ? "Available" : "Sold"}
               </span>
             </div>
 
-            <p className="text-2xl font-bold mb-6">${artwork.price}</p>
+            <p className="text-3xl font-light text-slate-700 mb-8">
+              ${artwork.price}
+            </p>
 
-            <div className="prose max-w-none mb-8">
-              <h3 className="text-xl font-semibold mb-2">Description</h3>
-              <p className="whitespace-pre-line">{artwork.description}</p>
+            <div className="prose max-w-none mb-10">
+              <h3 className="text-2xl font-light text-slate-800 mb-4">
+                Description
+              </h3>
+              <p className="text-slate-600 leading-relaxed font-light whitespace-pre-line">
+                {artwork.description}
+              </p>
             </div>
 
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold mb-2">Details</h3>
-              <ul className="space-y-2">
+            <div className="mb-10">
+              <h3 className="text-2xl font-light text-slate-800 mb-4">
+                Details
+              </h3>
+              <ul className="space-y-3">
                 {artwork.dimensions && (
                   <li className="flex">
-                    <span className="font-medium w-24">Dimensions:</span>
-                    <span>{artwork.dimensions.width} × {artwork.dimensions.height} {artwork.dimensions.unit}</span>
+                    <span className="font-light text-slate-700 w-32">
+                      Dimensions:
+                    </span>
+                    <span className="text-slate-600 font-light">
+                      {artwork.dimensions.width} × {artwork.dimensions.height}{" "}
+                      {artwork.dimensions.unit}
+                    </span>
                   </li>
                 )}
                 <li className="flex">
-                  <span className="font-medium w-24">Medium:</span>
-                  <span>{artwork.medium}</span>
+                  <span className="font-light text-slate-700 w-32">
+                    Medium:
+                  </span>
+                  <span className="text-slate-600 font-light">
+                    {artwork.medium}
+                  </span>
                 </li>
                 <li className="flex">
-                  <span className="font-medium w-24">Year:</span>
-                  <span>{artwork.year}</span>
+                  <span className="font-light text-slate-700 w-32">Year:</span>
+                  <span className="text-slate-600 font-light">
+                    {artwork.year}
+                  </span>
                 </li>
               </ul>
             </div>
 
             {artwork.inStock && (
-              <div className="mt-8">
+              <div className="mb-10">
                 <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-slate-500 mt-4 font-light">
                   Secure checkout • Shipping available worldwide
                 </p>
               </div>
             )}
 
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <h3 className="text-xl font-semibold mb-4">Have Questions?</h3>
-              <p className="mb-4">
-                Contact the artist for inquiries about this artwork, commission requests, or shipping details.
+            <div className="pt-10 border-t border-slate-200">
+              <h3 className="text-2xl font-light text-slate-800 mb-4">
+                Have Questions?
+              </h3>
+              <p className="mb-6 text-slate-600 font-light leading-relaxed">
+                Contact the artist for inquiries about this artwork, commission
+                requests, or shipping details.
               </p>
               <Link
                 href="/contact"
-                className="inline-block bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition"
+                className="inline-block bg-slate-50 border border-slate-200 text-slate-700 px-6 py-3 rounded-full hover:bg-slate-100 transition-all duration-300 font-light tracking-wide"
               >
                 Contact the Artist
               </Link>
             </div>
           </div>
         </div>
-      </main>
-    </>
+      </div>
+    </MainLayout>
   );
 }

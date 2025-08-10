@@ -12,6 +12,7 @@ export interface Artwork {
     height: string;
     unit: string;
   };
+  category: string;
   inStock: boolean;
   featured: boolean;
   createdAt: Date;
@@ -27,6 +28,7 @@ export interface ArtworkFormData {
   width: number;
   height: number;
   unit: string;
+  category: string;
   inStock: boolean;
   featured: boolean;
   images: { url: string; alt: string }[];

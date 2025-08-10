@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     const description = formData.get("description") as string;
     const price = parseFloat(formData.get("price") as string);
     const medium = formData.get("medium") as string;
+    const category = formData.get("category") as string;
     const year = parseInt(formData.get("year") as string);
     const width = parseFloat(formData.get("width") as string);
     const height = parseFloat(formData.get("height") as string);
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
       !description ||
       isNaN(price) ||
       !medium ||
+      !category ||
       isNaN(year) ||
       isNaN(width) ||
       isNaN(height) ||
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
         description,
         price,
         medium,
+        category,
         year,
         dimensions: {
           width,
@@ -110,9 +113,21 @@ export async function GET(request: NextRequest) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const featured = searchParams.get("featured") === "true";
+    const category = searchParams.get("category");
+    const inStock = searchParams.get("inStock") === "true";
+
+    // Build where clause
+    const where: {
+      featured?: boolean;
+      category?: string;
+      inStock?: boolean;
+    } = {};
+    if (featured) where.featured = true;
+    if (category) where.category = category;
+    if (inStock) where.inStock = true;
 
     const artworks = await db.artwork.findMany({
-      where: featured ? { featured: true } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: { createdAt: "desc" },
     });
 

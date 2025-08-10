@@ -27,6 +27,7 @@ export default function NewArtwork() {
     width: 0,
     height: 0,
     unit: "in",
+    category: "prints",
     inStock: true,
     featured: false,
     images: [],
@@ -249,6 +250,24 @@ export default function NewArtwork() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 required
               />
+            </div>
+
+            <div>
+              <label htmlFor="category" className="block text-gray-700 mb-2">
+                Category *
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                required
+              >
+                <option value="prints">Prints</option>
+                <option value="linocut-stamps">Linocut Stamps</option>
+                <option value="accessories">Accessories</option>
+              </select>
             </div>
 
             <div>

@@ -54,11 +54,11 @@ export default function BuyButton({
     <button
       onClick={handlePurchase}
       disabled={!inStock || isLoading}
-      className={`w-full py-3 px-6 rounded-md cursor-pointer ${
+      className={`w-full py-4 px-8 rounded-full cursor-pointer transition-all duration-300 font-light tracking-wide ${
         !inStock
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700"
-      } text-white font-medium`}
+          ? "bg-slate-200 cursor-not-allowed text-slate-400"
+          : "bg-slate-700 hover:bg-slate-800 text-white shadow-sm hover:shadow-md"
+      }`}
     >
       {isLoading ? t("processing") : inStock ? t("text") : t("soldOut")}
     </button>

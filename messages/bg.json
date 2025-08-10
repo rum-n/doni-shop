@@ -1,8 +1,8 @@
 {
   "HomePage": {
     "buttons": {
-      "gallery": "Галерия",
-      "shop": "Онлайн магазин"
+      "prints": "Принтове",
+      "linocutStamps": "Линогравюри"
     },
     "firstSectionTitle": "Избрани творби",
     "featuredArtworkCard": {
@@ -44,9 +44,24 @@
     }
   },
   "Navigation": {
-    "about": "За мен",
-    "gallery": "Галерия",
-    "shop": "Онлайн магазин"
+    "prints": "Принтове",
+    "linocutStamps": "Линогравюри",
+    "accessories": "Аксесоари",
+    "cart": "Количка"
+  },
+  "CategoryPages": {
+    "prints": {
+      "title": "Принтове",
+      "description": "Открийте нашата колекция от красиви принтове"
+    },
+    "linocutStamps": {
+      "title": "Линогравюри",
+      "description": "Ръчно изработени линогравюри за вашите творчески проекти"
+    },
+    "accessories": {
+      "title": "Аксесоари",
+      "description": "Художествени материали и аксесоари за художници"
+    }
   },
   "BuyButton": {
     "text": "Купи сега",

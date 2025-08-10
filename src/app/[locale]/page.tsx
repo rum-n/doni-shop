@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import MainLayout from "@/components/MainLayout";
+import VideoBackground from "@/components/VideoBackground";
 import ReactMarkdown from "react-markdown";
 // import { useTranslations } from "next-intl";
 
@@ -37,7 +38,16 @@ export default function Home() {
 
   return (
     <MainLayout currentPath="/">
-      <div className="p-4 lg:p-12">
+      {/* Video Background */}
+      <VideoBackground
+        videoSrc="/home-vid.mp4"
+        posterSrc="/home-vid.jpg"
+        fallbackImage={heroImage || undefined}
+        overlayOpacity={0.6}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 p-4 lg:p-12">
         {/* Hero Section */}
         <section className="relative h-64 lg:h-96 rounded-2xl lg:rounded-3xl overflow-hidden mb-12 lg:mb-20">
           {heroImage && (
@@ -48,9 +58,10 @@ export default function Home() {
                 fill
                 priority
                 style={{ objectFit: "cover" }}
+                className="rounded-2xl lg:rounded-3xl"
               />
               {/* Overlay to ensure text is readable */}
-              <div className="absolute inset-0 bg-black/30"></div>
+              <div className="absolute inset-0 bg-black/30 rounded-2xl lg:rounded-3xl"></div>
             </div>
           )}
 

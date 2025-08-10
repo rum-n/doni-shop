@@ -26,6 +26,8 @@ export default function Sidebar({
     return currentPath === path;
   };
 
+  const isHomepage = currentPath === "/";
+
   const navItems = [
     { href: "/prints", label: "prints" },
     { href: "/linocut-stamps", label: "linocutStamps" },
@@ -118,7 +120,11 @@ export default function Sidebar({
               key={item.href}
               href={item.href}
               className={`group relative font-playfair-regular tracking-wide transition-all duration-300 hover:underline hover:underline-offset-6 ${
-                isActive(item.href)
+                isHomepage
+                  ? isActive(item.href)
+                    ? "text-white font-medium underline underline-offset-6"
+                    : "text-white hover:text-white"
+                  : isActive(item.href)
                   ? "text-slate-800 font-medium underline underline-offset-6"
                   : "text-slate-600 hover:text-slate-800"
               }`}

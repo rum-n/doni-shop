@@ -26,7 +26,7 @@ export default function NewArtwork() {
     year: new Date().getFullYear(),
     width: 0,
     height: 0,
-    unit: "in",
+    unit: "cm",
     category: "prints",
     inStock: true,
     featured: false,
@@ -49,7 +49,8 @@ export default function NewArtwork() {
         ...formData,
         description: {
           ...formData.description,
-          [lang]: value,
+          ...(lang === "en" ? { en: value } : {}),
+          ...(lang === "bg" ? { bg: value } : {}),
         },
       });
     } else if (type === "checkbox") {
@@ -115,19 +116,36 @@ export default function NewArtwork() {
     try {
       const formDataToSend = new FormData();
 
-      Object.entries(formData).forEach(([key, value]) => {
-        if (key === "description") {
-          Object.entries(value).forEach(([lang, desc]) => {
-            formDataToSend.append(`description[${lang}]`, desc as string);
-          });
-        } else {
-          formDataToSend.append(key, value.toString());
-        }
-      });
+      // Add basic fields
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("slug", formData.slug);
+      formDataToSend.append("description[en]", formData.description.en);
+      formDataToSend.append("description[bg]", formData.description.bg);
+      formDataToSend.append("price", formData.price.toString());
+      formDataToSend.append("medium", formData.medium);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("year", formData.year.toString());
+      formDataToSend.append("width", formData.width.toString());
+      formDataToSend.append("height", formData.height.toString());
+      formDataToSend.append("unit", formData.unit);
+      formDataToSend.append("inStock", formData.inStock.toString());
+      formDataToSend.append("featured", formData.featured.toString());
 
-      formData.images.forEach((image, index) => {
-        formDataToSend.append(`image-${index}`, image.url);
-      });
+      // Add images as files
+      for (let i = 0; i < formData.images.length; i++) {
+        const image = formData.images[i];
+
+        // Convert image URL to blob/file
+        try {
+          const response = await fetch(image.url);
+          const blob = await response.blob();
+          formDataToSend.append(`image-${i}`, blob, `image-${i}.jpg`);
+        } catch (error) {
+          console.error(`Error converting image ${i} to blob:`, error);
+          // If we can't convert to blob, skip this image
+          continue;
+        }
+      }
 
       const response = await fetch("/api/artwork", {
         method: "POST",
@@ -210,7 +228,11 @@ export default function NewArtwork() {
                   <textarea
                     id={`description-${lang}`}
                     name={`description-${lang}`}
-                    value={formData.description[lang]}
+                    value={
+                      lang === "en"
+                        ? formData.description.en
+                        : formData.description.bg
+                    }
                     onChange={(e) => handleChange(e, lang)}
                     rows={4}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"

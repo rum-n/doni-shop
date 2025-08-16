@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
     // Extract text fields
     const title = formData.get("title") as string;
     const slug = formData.get("slug") as string;
-    const description = formData.get("description") as string;
+    const descriptionEn = formData.get("description[en]") as string;
+    const descriptionBg = formData.get("description[bg]") as string;
     const price = parseFloat(formData.get("price") as string);
     const medium = formData.get("medium") as string;
     const category = formData.get("category") as string;
@@ -41,7 +42,8 @@ export async function POST(request: NextRequest) {
     if (
       !title ||
       !slug ||
-      !description ||
+      !descriptionEn ||
+      !descriptionBg ||
       isNaN(price) ||
       !medium ||
       !category ||
@@ -82,7 +84,10 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         slug,
-        description,
+        description: {
+          en: descriptionEn,
+          bg: descriptionBg,
+        },
         price,
         medium,
         category,

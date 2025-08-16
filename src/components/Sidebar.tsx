@@ -27,12 +27,17 @@ export default function Sidebar({
   };
 
   const isHomepage = currentPath === "/";
+  const isIndividualArtwork = currentPath.includes("/artwork/");
 
   const navItems = [
     { href: "/prints", label: "prints" },
     { href: "/linocut-stamps", label: "linocutStamps" },
     { href: "/accessories", label: "accessories" },
   ];
+
+  if (isIndividualArtwork) {
+    return null;
+  }
 
   return (
     <>

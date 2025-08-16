@@ -22,7 +22,7 @@ model Artwork {
   id          String      @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   slug        String      @unique
-  description String
+  description Json // { en: string, bg: string } for multi-language support
   price       Float
   medium      String
   year        Int

@@ -12,6 +12,7 @@ import ImageGallery from "@/components/ImageGallery";
 export default function ArtworkDetail() {
   const params = useParams();
   const slug = params.slug as string;
+  const locale = params.locale as string;
 
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -42,6 +43,26 @@ export default function ArtworkDetail() {
       fetchArtwork();
     }
   }, [slug]);
+
+  // Get the appropriate description based on locale
+  const getDescription = () => {
+    if (!artwork) return "";
+
+    // Handle both old string format and new object format
+    if (typeof artwork.description === "string") {
+      return artwork.description;
+    }
+
+    // New multi-language format
+    if (
+      typeof artwork.description === "object" &&
+      artwork.description !== null
+    ) {
+      return locale === "bg" ? artwork.description.bg : artwork.description.en;
+    }
+
+    return "";
+  };
 
   if (isLoading) {
     return (
@@ -175,7 +196,7 @@ export default function ArtworkDetail() {
                 Description
               </h3>
               <p className="text-slate-600 leading-relaxed font-light whitespace-pre-line">
-                {artwork.description}
+                {getDescription()}
               </p>
             </div>
 

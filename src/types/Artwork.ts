@@ -6,7 +6,7 @@ export interface Artwork {
   medium: string;
   year: number;
   images?: { url: string; alt: string }[];
-  description: string;
+  description: { en: string; bg: string };
   dimensions: {
     width: string;
     height: string;
@@ -21,7 +21,7 @@ export interface Artwork {
 export interface ArtworkFormData {
   title: string;
   slug: string;
-  description: { [key: string]: string };
+  description: { en: string; bg: string };
   price: number;
   medium: string;
   year: number;

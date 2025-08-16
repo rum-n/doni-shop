@@ -6,7 +6,7 @@ export interface Artwork {
   medium: string;
   year: number;
   images?: { url: string; alt: string }[];
-  description: { en: string; bg: string };
+  description: string | { en: string; bg: string }; // Can be old string format or new object format
   dimensions: {
     width: string;
     height: string;

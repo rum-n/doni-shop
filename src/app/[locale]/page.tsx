@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import MainLayout from "@/components/MainLayout";
 import VideoBackground from "@/components/VideoBackground";
@@ -50,21 +49,6 @@ export default function Home() {
       <div className="relative z-10 p-4 lg:p-12">
         {/* Hero Section */}
         <section className="relative h-64 lg:h-96 rounded-2xl lg:rounded-3xl overflow-hidden mb-12 lg:mb-20">
-          {heroImage && (
-            <div className="absolute inset-0">
-              <Image
-                src={heroImage}
-                alt="Hero Image"
-                fill
-                priority
-                style={{ objectFit: "cover" }}
-                className="rounded-2xl lg:rounded-3xl"
-              />
-              {/* Overlay to ensure text is readable */}
-              <div className="absolute inset-0 bg-black/30 rounded-2xl lg:rounded-3xl"></div>
-            </div>
-          )}
-
           <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 lg:px-8">
             {homepageContent && (
               <div className="text-white">

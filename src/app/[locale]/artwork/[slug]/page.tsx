@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import MainLayout from "@/components/MainLayout";
 import { Artwork } from "@/types/Artwork";
 import BuyButton from "@/components/BuyButton";
@@ -13,6 +14,7 @@ export default function ArtworkDetail() {
   const params = useParams();
   const slug = params.slug as string;
   const locale = params.locale as string;
+  const t = useTranslations("ArtworkPage");
 
   const [artwork, setArtwork] = useState<Artwork | null>(null);
   const [selectedImage, setSelectedImage] = useState<number>(0);
@@ -64,6 +66,20 @@ export default function ArtworkDetail() {
     return "";
   };
 
+  // Get category name for back button
+  const getCategoryName = () => {
+    if (!artwork?.category) return "Prints";
+
+    switch (artwork.category) {
+      case "linocut-stamps":
+        return locale === "bg" ? "Линогравюри" : "Linocut Stamps";
+      case "accessories":
+        return locale === "bg" ? "Аксесоари" : "Accessories";
+      default:
+        return locale === "bg" ? "Принтове" : "Prints";
+    }
+  };
+
   if (isLoading) {
     return (
       <MainLayout currentPath={`/artwork/${slug}`}>
@@ -107,12 +123,7 @@ export default function ArtworkDetail() {
                 clipRule="evenodd"
               />
             </svg>
-            Back to{" "}
-            {artwork.category === "linocut-stamps"
-              ? "Linocut Stamps"
-              : artwork.category === "accessories"
-              ? "Accessories"
-              : "Prints"}
+            {t("buttons.back")} {getCategoryName()}
           </Link>
         </div>
 
@@ -125,18 +136,18 @@ export default function ArtworkDetail() {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-slate-50 to-gray-50 flex items-center justify-center">
                   <span className="text-slate-400 font-light">
-                    No image available
+                    {t("noImage")}
                   </span>
                 </div>
               )}
               {!artwork.inStock && (
                 <div className="absolute top-6 right-6 bg-slate-600 text-white px-4 py-2 rounded-full text-sm font-light">
-                  SOLD
+                  {t("status.sold")}
                 </div>
               )}
               {artwork.featured && (
                 <div className="absolute top-6 left-6 bg-slate-500 text-white px-4 py-2 rounded-full text-sm font-light">
-                  FEATURED
+                  {t("status.featured")}
                 </div>
               )}
             </div>
@@ -183,7 +194,7 @@ export default function ArtworkDetail() {
                     : "bg-slate-100 text-slate-700"
                 }`}
               >
-                {artwork.inStock ? "Available" : "Sold"}
+                {artwork.inStock ? t("status.available") : t("status.sold")}
               </span>
             </div>
 
@@ -193,7 +204,7 @@ export default function ArtworkDetail() {
 
             <div className="prose max-w-none mb-8 lg:mb-10">
               <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
-                Description
+                {t("sections.description")}
               </h3>
               <p className="text-slate-600 leading-relaxed font-light whitespace-pre-line">
                 {getDescription()}
@@ -202,13 +213,13 @@ export default function ArtworkDetail() {
 
             <div className="mb-8 lg:mb-10">
               <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
-                Details
+                {t("sections.details")}
               </h3>
               <ul className="space-y-3">
                 {artwork.dimensions && (
                   <li className="flex flex-col sm:flex-row">
                     <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
-                      Dimensions:
+                      {t("details.dimensions")}
                     </span>
                     <span className="text-slate-600 font-light">
                       {artwork.dimensions.width} × {artwork.dimensions.height}{" "}
@@ -218,7 +229,7 @@ export default function ArtworkDetail() {
                 )}
                 <li className="flex flex-col sm:flex-row">
                   <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
-                    Medium:
+                    {t("details.medium")}
                   </span>
                   <span className="text-slate-600 font-light">
                     {artwork.medium}
@@ -226,7 +237,7 @@ export default function ArtworkDetail() {
                 </li>
                 <li className="flex flex-col sm:flex-row">
                   <span className="font-light text-slate-700 w-32 mb-1 sm:mb-0">
-                    Year:
+                    {t("details.year")}
                   </span>
                   <span className="text-slate-600 font-light">
                     {artwork.year}
@@ -239,24 +250,23 @@ export default function ArtworkDetail() {
               <div className="mb-8 lg:mb-10">
                 <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
                 <p className="text-sm text-slate-500 mt-4 font-light">
-                  Secure checkout • Shipping available worldwide
+                  {t("checkout.secure")}
                 </p>
               </div>
             )}
 
             <div className="pt-8 lg:pt-10 border-t border-slate-200">
               <h3 className="text-xl lg:text-2xl font-playfair-regular text-slate-800 mb-4">
-                Have Questions?
+                {t("sections.questions")}
               </h3>
               <p className="mb-6 text-slate-600 font-light leading-relaxed">
-                Contact the artist for inquiries about this artwork, commission
-                requests, or shipping details.
+                {t("contact.text")}
               </p>
               <Link
                 href="/contact"
                 className="inline-block bg-slate-50 border border-slate-200 text-slate-700 px-6 py-3 rounded-full hover:bg-slate-100 transition-all duration-300 font-light tracking-wide"
               >
-                Contact the Artist
+                {t("contact.button")}
               </Link>
             </div>
           </div>

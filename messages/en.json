@@ -40,8 +40,31 @@
   },
   "ArtworkPage": {
     "buttons": {
-      "back": "Back to gallery"
-    }
+      "back": "Back to"
+    },
+    "status": {
+      "available": "Available",
+      "sold": "Sold",
+      "featured": "FEATURED"
+    },
+    "sections": {
+      "description": "Description",
+      "details": "Details",
+      "questions": "Have Questions?"
+    },
+    "details": {
+      "dimensions": "Dimensions:",
+      "medium": "Medium:",
+      "year": "Year:"
+    },
+    "contact": {
+      "text": "Contact the artist for inquiries about this artwork, commission requests, or shipping details.",
+      "button": "Contact the Artist"
+    },
+    "checkout": {
+      "secure": "Secure checkout • Shipping available worldwide"
+    },
+    "noImage": "No image available"
   },
   "Navigation": {
     "prints": "Prints",

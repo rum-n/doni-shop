@@ -113,7 +113,7 @@ export default function CategoryGallery({
                           {artwork.medium}, {artwork.year}
                         </p>
                         <p className="text-lg font-light text-slate-700">
-                          ${artwork.price}
+                          {artwork.price} EUR
                         </p>
                       </div>
                     </div>

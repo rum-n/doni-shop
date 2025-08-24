@@ -199,7 +199,7 @@ export default function ArtworkDetail() {
             </div>
 
             <p className="text-2xl lg:text-3xl font-light text-slate-700 mb-8">
-              ${artwork.price}
+              {artwork.price} EUR
             </p>
 
             <div className="prose max-w-none mb-8 lg:mb-10">

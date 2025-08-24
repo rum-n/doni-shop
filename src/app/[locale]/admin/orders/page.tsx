@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import AdminNavbar from '@/components/AdminNavbar';
-import OrderDetailsModal from '@/components/OrderDetailsModal';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
-import { Order } from '@/types/Order';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import AdminNavbar from "@/components/AdminNavbar";
+import OrderDetailsModal from "@/components/OrderDetailsModal";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { Order } from "@/types/Order";
 
 export default function AdminOrders() {
   const { status } = useSession();
@@ -16,20 +16,20 @@ export default function AdminOrders() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
+    if (status === "unauthenticated") {
+      router.push("/login");
       return;
     }
 
     const fetchOrders = async () => {
-      if (status === 'authenticated') {
+      if (status === "authenticated") {
         try {
-          const response = await fetch('/api/orders');
-          if (!response.ok) throw new Error('Failed to fetch orders');
+          const response = await fetch("/api/orders");
+          if (!response.ok) throw new Error("Failed to fetch orders");
           const data = await response.json();
           setOrders(data.orders);
         } catch (error) {
-          console.error('Error fetching orders:', error);
+          console.error("Error fetching orders:", error);
         } finally {
           setLoading(false);
         }
@@ -54,22 +54,40 @@ export default function AdminOrders() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Order Number
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Customer
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Items
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Total
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Date
                   </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Actions
                   </th>
                 </tr>
@@ -78,25 +96,34 @@ export default function AdminOrders() {
                 {orders.map((order) => (
                   <tr key={order.id}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {order.orderNumber}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{order.customer.email}</div>
+                      <div className="text-sm text-gray-900">
+                        {order.customer.email}
+                      </div>
                       {order.customer.name && (
-                        <div className="text-sm text-gray-500">{order.customer.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {order.customer.name}
+                        </div>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                        {order.items.length}{" "}
+                        {order.items.length === 1 ? "item" : "items"}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {order.items.map(item => item.artwork.title).join(', ')}
+                        {order.items
+                          .map((item) => item.artwork.title)
+                          .join(", ")}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        ${order.total.toFixed(2)}
+                        {order.total.toFixed(2)} EUR
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -117,7 +144,10 @@ export default function AdminOrders() {
 
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                    <td
+                      colSpan={6}
+                      className="px-6 py-4 text-center text-sm text-gray-500"
+                    >
                       No orders found
                     </td>
                   </tr>

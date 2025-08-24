@@ -195,7 +195,7 @@ export default function Shop() {
                           {artwork.medium}, {artwork.year}
                         </p>
                         <p className="text-lg font-bold mt-2">
-                          ${artwork.price}
+                          {artwork.price} EUR
                         </p>
                         <div className="mt-4 flex flex-col sm:flex-row gap-2 w-full">
                           <Link

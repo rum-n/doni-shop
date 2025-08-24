@@ -244,7 +244,7 @@ export default function NewArtwork() {
 
             <div>
               <label htmlFor="price" className="block text-gray-700 mb-2">
-                Price ($) *
+                Price (EUR) *
               </label>
               <input
                 type="number"

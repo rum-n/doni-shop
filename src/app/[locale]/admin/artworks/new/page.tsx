@@ -114,42 +114,17 @@ export default function NewArtwork() {
     setError("");
 
     try {
-      const formDataToSend = new FormData();
-
-      // Add basic fields
-      formDataToSend.append("title", formData.title);
-      formDataToSend.append("slug", formData.slug);
-      formDataToSend.append("description[en]", formData.description.en);
-      formDataToSend.append("description[bg]", formData.description.bg);
-      formDataToSend.append("price", formData.price.toString());
-      formDataToSend.append("medium", formData.medium);
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("year", formData.year.toString());
-      formDataToSend.append("width", formData.width.toString());
-      formDataToSend.append("height", formData.height.toString());
-      formDataToSend.append("unit", formData.unit);
-      formDataToSend.append("inStock", formData.inStock.toString());
-      formDataToSend.append("featured", formData.featured.toString());
-
-      // Add images as files
-      for (let i = 0; i < formData.images.length; i++) {
-        const image = formData.images[i];
-
-        // Convert image URL to blob/file
-        try {
-          const response = await fetch(image.url);
-          const blob = await response.blob();
-          formDataToSend.append(`image-${i}`, blob, `image-${i}.jpg`);
-        } catch (error) {
-          console.error(`Error converting image ${i} to blob:`, error);
-          // If we can't convert to blob, skip this image
-          continue;
-        }
+      if (formData.images.length === 0) {
+        throw new Error("Please upload at least one image");
       }
 
+      // Images already live on Cloudinary, so we only send their URLs
       const response = await fetch("/api/artwork", {
         method: "POST",
-        body: formDataToSend,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {

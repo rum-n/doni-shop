@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { uploadImage } from "@/lib/uploadImage";
 import { Artwork } from "@/types/Artwork";
 
 type Dimensions = {
@@ -10,6 +9,10 @@ type Dimensions = {
   height: string | number;
   unit: string;
 };
+
+// Images are uploaded to Cloudinary by the browser, so the client only ever
+// sends us URLs. Reject anything that is not a Cloudinary URL.
+const CLOUDINARY_URL_PREFIX = "https://res.cloudinary.com/";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,23 +23,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse form data
-    const formData = await request.formData();
+    const body = await request.json();
 
     // Extract text fields
-    const title = formData.get("title") as string;
-    const slug = formData.get("slug") as string;
-    const descriptionEn = formData.get("description[en]") as string;
-    const descriptionBg = formData.get("description[bg]") as string;
-    const price = parseFloat(formData.get("price") as string);
-    const medium = formData.get("medium") as string;
-    const category = formData.get("category") as string;
-    const year = parseInt(formData.get("year") as string);
-    const width = parseFloat(formData.get("width") as string);
-    const height = parseFloat(formData.get("height") as string);
-    const unit = formData.get("unit") as string;
-    const inStock = formData.get("inStock") === "true";
-    const featured = formData.get("featured") === "true";
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const slug = typeof body.slug === "string" ? body.slug.trim() : "";
+    const descriptionEn =
+      typeof body.description?.en === "string" ? body.description.en : "";
+    const descriptionBg =
+      typeof body.description?.bg === "string" ? body.description.bg : "";
+    const medium = typeof body.medium === "string" ? body.medium.trim() : "";
+    const category =
+      typeof body.category === "string" ? body.category.trim() : "";
+    const unit = typeof body.unit === "string" ? body.unit.trim() : "";
+
+    // The admin form keeps numeric inputs as strings, so coerce them here
+    const price = Number(body.price);
+    const year = Number(body.year);
+    const width = Number(body.width);
+    const height = Number(body.height);
+
+    const inStock = Boolean(body.inStock);
+    const featured = Boolean(body.featured);
 
     // Validate required fields
     if (
@@ -44,12 +52,12 @@ export async function POST(request: NextRequest) {
       !slug ||
       !descriptionEn ||
       !descriptionBg ||
-      isNaN(price) ||
+      !Number.isFinite(price) ||
       !medium ||
       !category ||
-      isNaN(year) ||
-      isNaN(width) ||
-      isNaN(height) ||
+      !Number.isFinite(year) ||
+      !Number.isFinite(width) ||
+      !Number.isFinite(height) ||
       !unit
     ) {
       return NextResponse.json(
@@ -58,25 +66,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process images
-    const imageUrls = [];
+    // Validate the uploaded image URLs
+    const submittedImages = Array.isArray(body.images) ? body.images : [];
 
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith("image-") && value instanceof Blob) {
-        const imageUrl = await uploadImage(value);
-        // Store the image URL without any locale prefix
-        imageUrls.push({
-          url: imageUrl,
-          alt: title, // Default alt text
-        });
-      }
-    }
-
-    if (imageUrls.length === 0) {
+    if (submittedImages.length === 0) {
       return NextResponse.json(
         { message: "At least one image is required" },
         { status: 400 }
       );
+    }
+
+    const images: { url: string; alt: string }[] = [];
+
+    for (const image of submittedImages) {
+      const url = typeof image?.url === "string" ? image.url : "";
+
+      if (!url.startsWith(CLOUDINARY_URL_PREFIX)) {
+        return NextResponse.json(
+          { message: "Images must be uploaded before saving" },
+          { status: 400 }
+        );
+      }
+
+      images.push({
+        url,
+        alt: typeof image?.alt === "string" && image.alt ? image.alt : title,
+      });
     }
 
     // Create artwork in database using Prisma
@@ -97,7 +112,7 @@ export async function POST(request: NextRequest) {
           height,
           unit,
         },
-        images: imageUrls,
+        images,
         inStock,
         featured,
       },
@@ -105,6 +120,18 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ artwork }, { status: 201 });
   } catch (error) {
+    // Slug is unique, so a repeated one is a user error rather than a fault
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      (error as { code?: string }).code === "P2002"
+    ) {
+      return NextResponse.json(
+        { message: "An artwork with this slug already exists" },
+        { status: 409 }
+      );
+    }
+
     console.error("Error creating artwork:", error);
     return NextResponse.json(
       { message: "An error occurred while creating the artwork" },

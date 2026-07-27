@@ -7,6 +7,67 @@ interface ImageUploaderProps {
   onUploadComplete: (url: string) => void;
 }
 
+interface UploadSignature {
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  folder: string;
+  signature: string;
+}
+
+// Sends the file straight to Cloudinary. Uses XHR rather than fetch because
+// only XHR reports upload progress.
+function uploadToCloudinary(
+  file: File,
+  auth: UploadSignature,
+  onProgress: (percent: number) => void
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    body.append('file', file);
+    body.append('api_key', auth.apiKey);
+    body.append('timestamp', String(auth.timestamp));
+    body.append('folder', auth.folder);
+    body.append('signature', auth.signature);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open(
+      'POST',
+      `https://api.cloudinary.com/v1_1/${auth.cloudName}/image/upload`
+    );
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      let payload: { secure_url?: string; error?: { message?: string } };
+
+      try {
+        payload = JSON.parse(xhr.responseText);
+      } catch {
+        reject(new Error('Cloudinary returned an unreadable response'));
+        return;
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300 && payload.secure_url) {
+        resolve(payload.secure_url);
+      } else {
+        reject(new Error(payload.error?.message || 'Cloudinary rejected the upload'));
+      }
+    });
+
+    xhr.addEventListener('error', () =>
+      reject(new Error('Network error while uploading to Cloudinary'))
+    );
+    xhr.addEventListener('abort', () => reject(new Error('Upload cancelled')));
+
+    xhr.send(body);
+  });
+}
+
 export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -18,40 +79,41 @@ export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) 
     // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
+      e.target.value = '';
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be less than 5MB');
+      e.target.value = '';
       return;
     }
 
     setIsUploading(true);
-    setProgress(10);
+    setProgress(0);
 
     try {
-      // Create FormData
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Upload to API
-      const response = await fetch('/api/upload', {
+      // Ask our server to authorize this upload, then send the bytes directly
+      // to Cloudinary so they never travel through the deployment.
+      const signatureResponse = await fetch('/api/upload/signature', {
         method: 'POST',
-        body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
+      if (!signatureResponse.ok) {
+        throw new Error('Could not authorize the upload');
       }
 
-      setProgress(90);
-      const data = await response.json();
-      onUploadComplete(data.url);
+      const auth: UploadSignature = await signatureResponse.json();
+      const url = await uploadToCloudinary(file, auth, setProgress);
+
+      onUploadComplete(url);
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to upload image'
+      );
     } finally {
       setIsUploading(false);
       setProgress(0);
@@ -59,28 +121,14 @@ export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) 
     }
   };
 
-  // Simulate progress for better user experience
-  if (isUploading) {
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        const newProgress = prevProgress + 10;
-        if (newProgress >= 90) {
-          clearInterval(interval);
-          return 90;
-        }
-        return newProgress;
-      });
-    }, 300);
-  }
-
   return (
     <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
       {isUploading ? (
         <div className="space-y-2">
-          <p className="text-sm text-gray-500">Uploading...</p>
+          <p className="text-sm text-gray-500">Uploading… {progress}%</p>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
             <div
-              className="bg-blue-600 h-2.5 rounded-full"
+              className="bg-blue-600 h-2.5 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             ></div>
           </div>

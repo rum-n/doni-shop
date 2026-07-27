@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,8 +14,10 @@ export async function GET(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    const { orderId } = await params;
+
     const order = await db.order.findUnique({
-      where: { id: (await params).id },
+      where: { id: orderId },
       include: {
         customer: true,
         items: {

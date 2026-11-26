@@ -22,7 +22,7 @@ export default function CartPage() {
 
   /**
    * A cart can sit in localStorage for weeks. Before showing it, re-check every
-   * piece against the database: anything sold is dropped, and prices are
+   * piece against the database: anything unavailable is dropped, and prices are
    * refreshed so the total always matches what Stripe will charge.
    */
   const revalidate = useCallback(async () => {
@@ -63,13 +63,13 @@ export default function CartPage() {
 
       if (dropped.length > 0) {
         replace(kept);
-        toast.error(t("soldRemoved", { titles: dropped.join(", ") }));
+        toast.error(t("unavailableRemoved", { titles: dropped.join(", ") }));
       } else if (
         kept.some(
           (item, i) => item.price !== items[i]?.price || item.id !== items[i]?.id
         )
       ) {
-        // Prices moved but nothing sold: update quietly.
+        // Prices moved but nothing went unavailable: update quietly.
         replace(kept);
       }
     } catch (error) {
@@ -102,7 +102,7 @@ export default function CartPage() {
         const goneIds = new Set(error.unavailable.map((a) => a.id));
         replace(items.filter((item) => !goneIds.has(item.id)));
         toast.error(
-          t("soldRemoved", {
+          t("unavailableRemoved", {
             titles: error.unavailable.map((a) => a.title).join(", "),
           })
         );

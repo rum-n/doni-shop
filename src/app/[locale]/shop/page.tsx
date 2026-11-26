@@ -8,9 +8,9 @@ import MainLayout from "@/components/MainLayout";
 import BuyButton from "@/components/BuyButton";
 import { Artwork } from "@/types/Artwork";
 
-type Availability = "all" | "available" | "sold";
+type Availability = "all" | "available" | "outOfStock";
 
-const AVAILABILITY: Availability[] = ["all", "available", "sold"];
+const AVAILABILITY: Availability[] = ["all", "available", "outOfStock"];
 
 type PriceRange = [number, number];
 
@@ -35,9 +35,9 @@ export default function Shop() {
     const fetchArtworks = async () => {
       setIsLoading(true);
       try {
-        // The whole collection, sold pieces included: the availability filter
-        // decides what is shown, so sold work stays reachable here. This page
-        // is the only place it appears.
+        // The whole collection, out-of-stock pieces included: the availability
+        // filter decides what is shown, so unavailable work stays reachable
+        // here. This page is the only place it appears.
         const response = await fetch("/api/artwork");
         const data = await response.json();
 
@@ -77,7 +77,7 @@ export default function Shop() {
 
   const filteredArtworks = sortedArtworks.filter((artwork) => {
     if (availability === "available" && !artwork.inStock) return false;
-    if (availability === "sold" && artwork.inStock) return false;
+    if (availability === "outOfStock" && artwork.inStock) return false;
     return artwork.price >= priceRange[0] && artwork.price <= priceRange[1];
   });
 
@@ -206,8 +206,8 @@ export default function Shop() {
                         </div>
                       )}
                       {!artwork.inStock && (
-                        <span className="badge badge-sold absolute top-4 right-4">
-                          {t("soldBadge")}
+                        <span className="badge badge-unavailable absolute top-4 right-4">
+                          {t("outOfStockBadge")}
                         </span>
                       )}
                     </div>

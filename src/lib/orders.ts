@@ -2,9 +2,16 @@ import { randomBytes } from "crypto";
 import { hash } from "bcrypt";
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
+import { sendOrderEmails } from "@/lib/email";
 
 export type RecordResult =
-  | { status: "created"; orderId: string; oversold: string[] }
+  | {
+      status: "created";
+      orderId: string;
+      unavailable: string[];
+      /** Why the order emails did not go out, if they did not. */
+      emailProblem?: string;
+    }
   | { status: "duplicate" }
   | { status: "skipped"; reason: string };
 
@@ -59,9 +66,11 @@ function readShippingAddress(session: Stripe.Checkout.Session) {
 /**
  * Turns a completed Stripe Checkout session into an order.
  *
- * The order is written before the artwork is marked sold, and both happen in
- * one transaction, so a failure can never leave a piece marked unavailable
- * with no order behind it.
+ * Availability is not touched here. These are prints, which can be reprinted,
+ * so a sale says nothing about whether stock has run out — the shop owner sets
+ * `inStock` by hand in the admin when a run is exhausted. An earlier version
+ * flipped it to false on the first sale, which quietly pulled a print from the
+ * shop after one order.
  */
 export async function recordCheckoutSession(
   session: Stripe.Checkout.Session
@@ -105,10 +114,11 @@ export async function recordCheckoutSession(
     };
   }
 
-  // The buyer has already paid. If a piece sold in the window between checkout
-  // and this webhook, the order is still recorded — losing it would lose the
-  // payment too — and the conflict is reported so the shop owner can refund.
-  const oversold = artworks.filter((artwork) => !artwork.inStock);
+  // The buyer has already paid. If the owner marked something unavailable in
+  // the window between checkout and this webhook, the order is still recorded —
+  // losing it would lose the payment too — and the conflict is reported so the
+  // shop owner can fulfil or refund it deliberately.
+  const unavailable = artworks.filter((artwork) => !artwork.inStock);
 
   const total = (session.amount_total ?? 0) / 100;
   const paymentIntent =
@@ -121,47 +131,52 @@ export async function recordCheckoutSession(
   // Hashing is slow, so keep it outside the transaction
   const password = await unusablePassword();
 
-  const order = await db.$transaction(async (tx) => {
-    const created = await tx.order.create({
-      data: {
-        orderNumber: session.id,
-        customer: {
-          connectOrCreate: {
-            where: { email },
-            create: {
-              email,
-              name: session.customer_details?.name ?? null,
-              password,
-              role: "customer",
-            },
+  // One nested create: Prisma writes the order and its items atomically, and
+  // there is no second table to keep in step now that stock is manual.
+  const order = await db.order.create({
+    data: {
+      orderNumber: session.id,
+      customer: {
+        connectOrCreate: {
+          where: { email },
+          create: {
+            email,
+            name: session.customer_details?.name ?? null,
+            password,
+            role: "customer",
           },
         },
-        items: {
-          create: artworks.map((artwork) => ({
-            artwork: { connect: { id: artwork.id } },
-            // The price charged, captured at the time of sale, so later edits
-            // to the artwork never rewrite order history.
-            price: artwork.price,
-            quantity: 1,
-          })),
-        },
-        total,
-        ...(shippingAddress ? { shippingAddress } : {}),
-        paymentIntent,
       },
-    });
-
-    await tx.artwork.updateMany({
-      where: { id: { in: artworks.map((artwork) => artwork.id) } },
-      data: { inStock: false },
-    });
-
-    return created;
+      items: {
+        create: artworks.map((artwork) => ({
+          artwork: { connect: { id: artwork.id } },
+          // The price charged, captured at the time of sale, so later edits
+          // to the artwork never rewrite order history.
+          price: artwork.price,
+          quantity: 1,
+        })),
+      },
+      total,
+      ...(shippingAddress ? { shippingAddress } : {}),
+      paymentIntent,
+    },
+    include: {
+      items: {
+        include: {
+          artwork: { select: { title: true, medium: true, year: true } },
+        },
+      },
+    },
   });
+
+  // Both emails are best effort: the order is already paid for and saved, so a
+  // mail provider outage must not turn into a webhook retry.
+  const email_ = await sendOrderEmails(order, email);
 
   return {
     status: "created",
     orderId: order.id,
-    oversold: oversold.map((artwork) => artwork.title),
+    unavailable: unavailable.map((artwork) => artwork.title),
+    ...(email_.sent ? {} : { emailProblem: email_.reason }),
   };
 }

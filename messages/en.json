@@ -16,7 +16,7 @@
     "filters": {
       "all": "All artworks",
       "available": "Available",
-      "sold": "Sold"
+      "outOfStock": "Out of stock"
     },
     "sort": "Sort by",
     "newest": "Newest",
@@ -36,15 +36,15 @@
     "ctaTitle": "Looking for something special?",
     "ctaText": "If you don't find exactly what you're looking for, consider a custom order. Doni creates unique artworks tailored to your taste and space.",
     "ctaButton": "Request a custom order",
-    "soldBadge": "Sold"
+    "outOfStockBadge": "Out of stock"
   },
   "ArtworkPage": {
     "buttons": {
       "back": "Back to"
     },
     "status": {
-      "available": "Available",
-      "sold": "Sold",
+      "available": "In stock",
+      "outOfStock": "Out of stock",
       "featured": "FEATURED"
     },
     "sections": {
@@ -94,14 +94,14 @@
       "title": "Accessories",
       "description": "Everyday objects with custom designs"
     },
-    "soldBadge": "Sold",
+    "outOfStockBadge": "Out of stock",
     "noArtworks": "No artworks in this category yet.",
     "noImage": "No image available"
   },
   "BuyButton": {
     "text": "Buy now",
     "processing": "Processing...",
-    "soldOut": "Sold out"
+    "outOfStock": "Out of stock"
   },
   "Cart": {
     "title": "Shopping Cart",
@@ -114,7 +114,7 @@
     "removeFromCart": "Remove from cart",
     "added": "“{title}” was added to your cart",
     "removed": "“{title}” was removed from your cart",
-    "soldRemoved": "No longer available, removed from your cart: {titles}",
+    "unavailableRemoved": "No longer available, removed from your cart: {titles}",
     "checkoutFailed": "Checkout could not be started. Please try again.",
     "shippingNote": "Secure checkout • Shipping within the EU"
   },
@@ -140,5 +140,14 @@
     "title": "Page not found",
     "body": "This page does not exist, or it has moved.",
     "home": "Back to the home page"
+  },
+  "Meta": {
+    "siteName": "Doni Boyadzhieva",
+    "homeTitle": "Doni Boyadzhieva — Prints, Linocuts, Accessories",
+    "tagline": "Original prints, linocut stamps and hand-made accessories by Doni Boyadzhieva.",
+    "shop": "Browse every available print, linocut stamp and accessory, with sorting and price filters.",
+    "about": "About Doni Boyadzhieva and the work behind the prints.",
+    "contact": "Get in touch about a piece, a commission or shipping.",
+    "cart": "Review the items in your cart before checking out."
   }
 }

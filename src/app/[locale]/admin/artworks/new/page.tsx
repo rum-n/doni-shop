@@ -409,7 +409,7 @@ export default function NewArtwork() {
                 className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               />
               <label htmlFor="inStock" className="ml-2 block text-gray-700">
-                Available for purchase
+                In stock
               </label>
             </div>
 

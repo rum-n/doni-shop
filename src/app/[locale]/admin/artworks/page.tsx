@@ -142,7 +142,7 @@ export default function ManageArtworks() {
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
                           }`}>
-                          {artwork.inStock ? 'Available' : 'Sold'}
+                          {artwork.inStock ? 'In stock' : 'Out of stock'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

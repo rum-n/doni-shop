@@ -212,8 +212,8 @@ body {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-light tracking-wide;
   }
 
-  /* Both compose with .badge: class="badge badge-sold" */
-  .badge-sold {
+  /* Both compose with .badge: class="badge badge-unavailable" */
+  .badge-unavailable {
     @apply bg-accent/90 text-on-accent;
   }
 

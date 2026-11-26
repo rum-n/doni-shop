@@ -41,7 +41,7 @@ export default function BuyButton({
       disabled={!inStock || isLoading}
       className={`btn btn-block ${inStock ? "btn-primary" : "btn-secondary"}`}
     >
-      {isLoading ? t("processing") : inStock ? t("text") : t("soldOut")}
+      {isLoading ? t("processing") : inStock ? t("text") : t("outOfStock")}
     </button>
   );
 }

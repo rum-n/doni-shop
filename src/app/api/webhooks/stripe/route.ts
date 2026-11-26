@@ -45,12 +45,20 @@ export async function POST(request: Request) {
         );
       }
 
-      // Paid for, but the piece had already gone. The order exists so the
-      // payment is not lost; someone has to refund or reprint.
-      if (result.status === "created" && result.oversold.length > 0) {
+      // Worth knowing about, but never worth a retry: the order is saved.
+      if (result.status === "created" && result.emailProblem) {
         console.error(
-          `Order ${result.orderId} contains already-sold items and needs ` +
-            `manual resolution: ${result.oversold.join(", ")}`
+          `Order ${result.orderId} was recorded but its emails did not all ` +
+            `send: ${result.emailProblem}`
+        );
+      }
+
+      // Paid for, but marked unavailable. The order exists so the payment is
+      // not lost; someone has to fulfil, reprint or refund it.
+      if (result.status === "created" && result.unavailable.length > 0) {
+        console.error(
+          `Order ${result.orderId} contains items marked out of stock and ` +
+            `needs manual resolution: ${result.unavailable.join(", ")}`
         );
       }
     }

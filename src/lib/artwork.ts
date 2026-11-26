@@ -66,3 +66,21 @@ export function normalizeArtwork(artwork: ArtworkRow): Artwork {
     images,
   };
 }
+
+/**
+ * Picks the description for a locale, tolerating the old string format.
+ *
+ * Safe to import from a client component: this module has only type-level
+ * imports, unlike artwork-lookup.ts which reaches for the database.
+ */
+export function describeArtwork(artwork: Artwork, locale: string): string {
+  if (typeof artwork.description === "string") return artwork.description;
+
+  if (artwork.description && typeof artwork.description === "object") {
+    return locale === "bg"
+      ? artwork.description.bg || artwork.description.en || ""
+      : artwork.description.en || artwork.description.bg || "";
+  }
+
+  return "";
+}

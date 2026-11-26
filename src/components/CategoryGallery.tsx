@@ -98,8 +98,8 @@ export default function CategoryGallery({
                           </div>
                         )}
                         {!artwork.inStock && (
-                          <span className="badge badge-sold absolute top-4 right-4">
-                            {t("soldBadge")}
+                          <span className="badge badge-unavailable absolute top-4 right-4">
+                            {t("outOfStockBadge")}
                           </span>
                         )}
                       </div>

@@ -31,6 +31,25 @@ calling out:
 - **`DATABASE_URL`** — must point at a replica set (MongoDB Atlas is one by
   default). Order recording runs in a Prisma transaction, which requires one.
 
+### Is it actually working?
+
+```bash
+npm run doctor
+```
+
+Read-only: it never creates a charge, an order or an endpoint, and never prints
+a secret. It checks the environment, that the Stripe key works, that a webhook
+endpoint is registered for this deployment and subscribed to
+`checkout.session.completed`, that the database is reachable, and — the one
+check that proves the live path — that **every completed Checkout session in
+Stripe has a matching order row**. The order number *is* the session id, so a
+paid session with no order means the webhook never landed.
+
+Note it reads the local `.env`. It cannot see your hosting provider's
+environment, so a passing run locally does not prove `STRIPE_WEBHOOK_SECRET` is
+set in production — check that in the host's dashboard, or run the reconcile
+check with production credentials.
+
 ### Receiving Stripe webhooks locally
 
 ```bash
@@ -75,12 +94,26 @@ deliberately no HTTP endpoint for it.
    session that collects a shipping address.
 2. Stripe redirects the buyer to `/[locale]/checkout/success`.
 3. `POST /api/webhooks/stripe` verifies the signature and calls
-   `recordCheckoutSession`, which writes the order and marks the pieces sold in
-   one transaction, keyed on the Stripe session id so repeated deliveries are
-   idempotent.
+   `recordCheckoutSession`, which writes the order keyed on the Stripe session
+   id, so repeated deliveries are idempotent, and then sends the order emails.
 4. The success page polls `/api/orders/session/<id>` until the order appears.
 
 Where the shop ships is the single list in `src/lib/shipping.ts`.
+
+### Stock
+
+These are prints, not unique pieces, so a sale says nothing about whether a run
+is exhausted. `Artwork.inStock` is set **by hand** in the admin; buying
+something never changes it. An earlier version flipped it to false on the first
+sale, which pulled a print from the shop after one order.
+
+### Email
+
+Order emails go out from the webhook through Resend: a confirmation to the
+buyer and a notification to the shop owner, with the buyer as `reply-to`.
+Sending is best effort — the order is already paid for and saved, so a provider
+outage is logged rather than turned into a webhook retry. Unset the Resend
+variables and the shop still works, silently sending nothing.
 
 ### Images
 
@@ -98,10 +131,15 @@ only ever accepts and stores `https://res.cloudinary.com/...` URLs.
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run create-admin` | Create the owner account (interactive) |
+| `npm run doctor` | Check env, Stripe, the webhook endpoint, the database and email |
 
 ## Known gaps
 
-- **No transactional email.** Nothing notifies the buyer or the owner when an
-  order is placed; the owner has to watch `/admin/orders`.
 - **No shipping cost** is charged — prices are the artwork alone.
 - **No tests and no CI.**
+- **The admin area** is still on the pre-redesign styling and is English only.
+- **`Artwork.featured`** is written by the admin form and filterable in the API,
+  but no page uses it: the homepage has no featured row and the shop lists
+  everything. Either put a featured section back or drop the flag.
+- **Category pages hide out-of-stock work** (`?category=X&inStock=true`), so an
+  unavailable print shows on `/shop` but not on `/prints`.

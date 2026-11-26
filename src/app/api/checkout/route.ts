@@ -68,9 +68,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Every piece is one of a kind, so anything already sold has to be removed
-    // from the cart before the buyer can pay. Name them so the cart can say
-    // which ones went.
+    // Anything the owner has marked out of stock cannot be bought, so it has
+    // to leave the cart before payment. Name them so the cart can say which.
     const sold = artworks.filter((artwork) => !artwork.inStock);
 
     if (sold.length > 0) {

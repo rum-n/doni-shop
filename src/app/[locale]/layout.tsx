@@ -5,7 +5,9 @@ import "../globals.css";
 import { Providers } from "../providers";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import { baseUrl } from "@/lib/metadata";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,10 +25,39 @@ const playfairDisplay = Playfair_Display({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Doni Boyadzhieva - Prints, Linocuts, Art designs",
-  description: "Discover unique artworks from a passionate creator",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Meta" });
+
+  return {
+    // Lets every page below use relative canonical and OG URLs.
+    metadataBase: new URL(baseUrl()),
+    title: {
+      // A page sets only its own name; the site name is appended here.
+      default: t("homeTitle"),
+      template: `%s · ${t("siteName")}`,
+    },
+    description: t("tagline"),
+    alternates: {
+      canonical: `/${locale}`,
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [l, `/${l}`])
+      ),
+    },
+    openGraph: {
+      type: "website",
+      siteName: t("siteName"),
+      title: t("homeTitle"),
+      description: t("tagline"),
+      url: `/${locale}`,
+      locale,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

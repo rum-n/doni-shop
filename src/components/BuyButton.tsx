@@ -1,12 +1,10 @@
 "use client";
-import { useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import { useTranslations } from "next-intl";
 
-// Initialize Stripe
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { toast } from "react-hot-toast";
+import { startCheckout, CheckoutError } from "@/lib/checkout";
 
 export default function BuyButton({
   artworkId,
@@ -17,35 +15,22 @@ export default function BuyButton({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const t = useTranslations("BuyButton");
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
 
   const handlePurchase = async () => {
     setIsLoading(true);
 
     try {
-      // 1. Create checkout session on server
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artworkId }),
-      });
-
-      const { sessionId } = await response.json();
-
-      // 2. Use Stripe to redirect to checkout
-      const stripe = await stripePromise;
-      if (!stripe) throw new Error("Failed to load Stripe");
-
-      // Redirect to Stripe checkout
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-
-      if (error) {
-        console.error("Stripe redirect error:", error);
-        alert("Something went wrong. Please try again.");
-      }
+      await startCheckout([artworkId], locale);
+      // On success the browser is already navigating to Stripe.
     } catch (error) {
       console.error("Error initiating checkout:", error);
-      alert("Unable to process purchase. Please try again.");
-    } finally {
+      toast.error(
+        error instanceof CheckoutError
+          ? error.message
+          : "Unable to start checkout. Please try again."
+      );
       setIsLoading(false);
     }
   };
@@ -54,11 +39,7 @@ export default function BuyButton({
     <button
       onClick={handlePurchase}
       disabled={!inStock || isLoading}
-      className={`w-full py-4 px-8 rounded-full cursor-pointer transition-all duration-300 font-light tracking-wide ${
-        !inStock
-          ? "bg-slate-200 cursor-not-allowed text-slate-400"
-          : "bg-slate-700 hover:bg-slate-800 text-white shadow-sm hover:shadow-md"
-      }`}
+      className={`btn btn-block ${inStock ? "btn-primary" : "btn-secondary"}`}
     >
       {isLoading ? t("processing") : inStock ? t("text") : t("soldOut")}
     </button>

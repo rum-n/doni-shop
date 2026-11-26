@@ -1,10 +1,33 @@
+/** Mirrors the comment on Order.status in the Prisma schema. */
+export const ORDER_STATUSES = [
+  "pending",
+  "processing",
+  "completed",
+  "cancelled",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export interface ShippingAddress {
+  name?: string | null;
+  phone?: string | null;
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  state?: string | null;
+  country?: string | null;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
   createdAt: string;
   total: number;
+  status: OrderStatus;
+  shippingAddress?: ShippingAddress | null;
   customer: {
-    name: string;
+    name: string | null;
     email: string;
   };
   items: {
@@ -13,7 +36,7 @@ export interface Order {
       images: { url: string }[];
       title: string;
       medium: string;
-      year: string;
+      year: number;
     };
     price: number;
   }[];

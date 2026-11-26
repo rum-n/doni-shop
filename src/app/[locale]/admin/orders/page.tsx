@@ -1,49 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import OrderDetailsModal from "@/components/OrderDetailsModal";
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { Order } from "@/types/Order";
+import type { Order, OrderStatus } from "@/types/Order";
+
+const STATUS_STYLES: Record<OrderStatus, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  processing: "bg-blue-100 text-blue-800",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-gray-200 text-gray-700",
+};
 
 export default function AdminOrders() {
-  const { status } = useSession();
-  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-      return;
+  // Middleware keeps non-admins off this page, so it can just load.
+  const fetchOrders = useCallback(async () => {
+    try {
+      const response = await fetch("/api/orders");
+      if (!response.ok) throw new Error("Failed to fetch orders");
+      const data = await response.json();
+      setOrders(data.orders);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+      setError("Could not load orders. Please reload the page.");
+    } finally {
+      setLoading(false);
     }
+  }, []);
 
-    const fetchOrders = async () => {
-      if (status === "authenticated") {
-        try {
-          const response = await fetch("/api/orders");
-          if (!response.ok) throw new Error("Failed to fetch orders");
-          const data = await response.json();
-          setOrders(data.orders);
-        } catch (error) {
-          console.error("Error fetching orders:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
+  useEffect(() => {
     fetchOrders();
-  }, [status, router]);
+  }, [fetchOrders]);
 
   return (
     <>
       <AdminNavbar />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Manage Orders</h1>
+
+        {error && (
+          <div className="mb-6 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        )}
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -83,6 +88,12 @@ export default function AdminOrders() {
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     Date
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
                   </th>
                   <th
                     scope="col"
@@ -131,6 +142,15 @@ export default function AdminOrders() {
                         {new Date(order.createdAt).toLocaleDateString()}
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          STATUS_STYLES[order.status] ?? STATUS_STYLES.pending
+                        }`}
+                      >
+                        {order.status ?? "pending"}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() => setSelectedOrderId(order.id)}
@@ -145,7 +165,7 @@ export default function AdminOrders() {
                 {orders.length === 0 && (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       No orders found
@@ -162,6 +182,13 @@ export default function AdminOrders() {
         <OrderDetailsModal
           orderId={selectedOrderId}
           onClose={() => setSelectedOrderId(null)}
+          onStatusChange={(orderId, status) =>
+            setOrders((current) =>
+              current.map((order) =>
+                order.id === orderId ? { ...order, status } : order
+              )
+            )
+          }
         />
       )}
     </>

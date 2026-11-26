@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/require-admin";
 import { v2 as cloudinary } from "cloudinary";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 // Folder every browser-side upload is pinned to. It is part of the signature,
 // so the client cannot redirect uploads elsewhere.
@@ -11,11 +10,8 @@ const UPLOAD_FOLDER = "artwork-images";
 // Cloudinary. Image bytes never pass through this deployment.
 export async function POST() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;

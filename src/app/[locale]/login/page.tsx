@@ -33,21 +33,16 @@ function LoginForm() {
     setError("");
 
     try {
-      console.log("Attempting to sign in with email:", email);
-
       const result = await signIn("credentials", {
         redirect: false,
         email,
         password,
       });
 
-      console.log("Sign in result:", result);
-
       if (result?.error) {
         setError(`Login failed: ${result.error}`);
         console.error("Login error:", result.error);
       } else if (result?.ok) {
-        console.log("Login successful, redirecting to admin");
         router.push("/admin");
         router.refresh();
       } else {
@@ -66,19 +61,15 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
+      <div className="card panel-pad w-full max-w-md">
+        <h1 className="section-title mb-6 text-center">Admin Login</h1>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+        {error && <div className="notice-error mb-6 text-sm">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 mb-2">
+            <label htmlFor="email" className="input-label">
               Email
             </label>
             <input
@@ -86,13 +77,13 @@ function LoginForm() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="input"
               required
             />
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-gray-700 mb-2">
+            <label htmlFor="password" className="input-label">
               Password
             </label>
             <input
@@ -100,7 +91,7 @@ function LoginForm() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="input"
               required
             />
           </div>
@@ -108,25 +99,12 @@ function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="btn btn-primary btn-block"
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {/* Debug info in development */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
-            <p>
-              <strong>Debug Info:</strong>
-            </p>
-            <p>Status: {status}</p>
-            <p>NEXTAUTH_URL: {process.env.NEXTAUTH_URL || "Not set"}</p>
-            <p>
-              NEXTAUTH_SECRET: {process.env.NEXTAUTH_SECRET ? "Set" : "Not set"}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -137,8 +115,8 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          Loading...
+        <div className="flex min-h-screen items-center justify-center bg-canvas">
+          <div className="spinner h-10 w-10" />
         </div>
       }
     >

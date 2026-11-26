@@ -1,86 +1,94 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
+import { routing } from "@/i18n/routing";
 
 const LANGUAGE_STORAGE_KEY = "userLanguagePreference";
 
+const LANGUAGES = [
+  { code: "en", name: "EN" },
+  { code: "bg", name: "BG" },
+] as const;
+
+function isSupported(code: string | null): boolean {
+  return !!code && (routing.locales as readonly string[]).includes(code);
+}
+
+/** Swaps the locale segment of the current path, e.g. /en/prints → /bg/prints. */
+function withLocale(pathname: string, locale: string): string {
+  const stripped = pathname.replace(
+    new RegExp(`^/(?:${routing.locales.join("|")})(?=/|$)`),
+    ""
+  );
+  return `/${locale}${stripped || ""}`;
+}
+
 export default function LanguageSwitcher() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState("en");
   const router = useRouter();
   const pathname = usePathname();
 
-  const languages = [
-    { code: "en", name: "EN" },
-    { code: "bg", name: "BG" },
-  ];
+  // The locale the page is actually rendered in, straight from next-intl, so
+  // the label can never disagree with the URL.
+  const currentLocale = useLocale();
 
-  // Initialize locale from localStorage or browser settings
+  /**
+   * Honour a saved preference once, on first load, and only when the URL does
+   * not already match it. The previous version pushed a new route on every
+   * mount, which quietly dragged visitors back to their stored language every
+   * time they followed a link in the other one.
+   */
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    let saved: string | null = null;
 
-    // First check localStorage for saved preference
-    const savedLocale = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-
-    if (savedLocale && languages.some((lang) => lang.code === savedLocale)) {
-      setCurrentLocale(savedLocale);
-      const newPath = pathname.replace(/^\/[^\/]+/, `/${savedLocale}`);
-      router.push(newPath);
+    try {
+      saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    } catch {
+      // Storage blocked: fall back to whatever the URL says.
       return;
     }
 
-    // Fall back to browser locale detection if no saved preference
-    const detectBrowserLocale = () => {
-      if (navigator) {
-        // Get browser language (e.g., 'en-US', 'bg', etc.)
-        const browserLang = navigator.language;
-
-        // Extract the base language code (e.g., 'en' from 'en-US')
-        const baseLang = browserLang.split("-")[0].toLowerCase();
-
-        // Check if we support this language
-        const isSupported = languages.some((lang) => lang.code === baseLang);
-
-        // Set the locale (use browser's if supported, otherwise default to 'en')
-        const detectedLocale = isSupported ? baseLang : "en";
-        setCurrentLocale(detectedLocale);
-
-        // Also store this initial detected preference
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, detectedLocale);
-
-        const newPath = pathname.replace(/^\/[^\/]+/, `/${detectedLocale}`);
-        router.push(newPath);
+    if (!isSupported(saved)) {
+      // Record where we ended up, so the next visit is stable.
+      try {
+        window.localStorage.setItem(LANGUAGE_STORAGE_KEY, currentLocale);
+      } catch {
+        // Nothing to do; the switcher still works for this visit.
       }
-    };
-
-    detectBrowserLocale();
-  }, [router, pathname]);
-
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
-  const handleLocaleChange = (locale: string) => {
-    // Update state
-    setCurrentLocale(locale);
-    setIsDropdownOpen(false);
-
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
+      return;
     }
 
-    // Change locale by updating the path
-    const newPath = pathname.replace(/^\/[^\/]+/, `/${locale}`);
-    router.push(newPath);
+    if (saved !== currentLocale) {
+      router.replace(withLocale(pathname, saved as string));
+    }
+    // First load only: re-running on navigation is what caused the old loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLocaleChange = (locale: string) => {
+    setIsDropdownOpen(false);
+
+    if (locale === currentLocale) return;
+
+    try {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, locale);
+    } catch {
+      // The switch still works, it just will not be remembered.
+    }
+
+    router.push(withLocale(pathname, locale));
   };
 
   return (
     <div className="relative">
       <button
-        onClick={toggleDropdown}
-        className="flex items-center text-slate-600 hover:text-slate-800 focus:outline-none cursor-pointer px-4 py-2 rounded-full hover:bg-slate-50 transition-all duration-300 font-light tracking-wide"
+        onClick={() => setIsDropdownOpen((open) => !open)}
+        aria-expanded={isDropdownOpen}
+        aria-haspopup="menu"
+        aria-label="Change language"
+        className="flex cursor-pointer items-center rounded-full px-4 py-2 font-light tracking-wide text-ink-soft transition-all duration-300 hover:bg-surface-sunken hover:text-ink focus:outline-none"
       >
         <span>{currentLocale.toUpperCase()}</span>
         <svg
@@ -100,16 +108,20 @@ export default function LanguageSwitcher() {
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 w-24 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg z-100 border border-slate-200">
+        <div
+          role="menu"
+          className="absolute right-0 z-50 mt-2 w-24 rounded-media border border-line bg-surface/95 shadow-card-hover backdrop-blur-sm"
+        >
           <div className="py-2">
-            {languages.map((lang) => (
+            {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
+                role="menuitem"
                 onClick={() => handleLocaleChange(lang.code)}
-                className={`block px-4 py-2 text-sm cursor-pointer w-full text-left transition-colors duration-200 font-light ${
+                className={`block w-full cursor-pointer px-4 py-2 text-left text-sm font-light transition-colors duration-200 ${
                   currentLocale === lang.code
-                    ? "text-slate-800 bg-slate-50"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                    ? "bg-surface-sunken text-ink"
+                    : "text-ink-soft hover:bg-surface-sunken hover:text-ink"
                 }`}
               >
                 {lang.name}

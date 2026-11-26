@@ -48,7 +48,6 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user) {
-            console.log("User not found:", credentials.email);
             return null;
           }
 
@@ -58,7 +57,6 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isPasswordValid) {
-            console.log("Invalid password for user:", credentials.email);
             return null;
           }
 

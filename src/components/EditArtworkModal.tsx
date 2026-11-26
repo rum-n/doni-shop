@@ -5,17 +5,26 @@ import { toast } from 'react-hot-toast';
 import ImageUploader from '@/components/ImageUploader';
 import Image from 'next/image';
 
+const CATEGORIES = [
+  { value: 'prints', label: 'Prints' },
+  { value: 'linocut-stamps', label: 'Linocut Stamps' },
+  { value: 'accessories', label: 'Accessories' },
+];
+
 interface ArtworkFormData {
   id: string;
   title: string;
   slug: string;
-  description: string;
+  /** Bilingual, matching what the API stores and the public pages read. */
+  description: { en: string; bg: string };
   price: number;
   medium: string;
+  category: string;
   year: number;
   dimensions: {
     width: number;
     height: number;
+    unit: string;
   };
   inStock: boolean;
   featured: boolean;
@@ -29,17 +38,17 @@ interface EditArtworkModalProps {
 }
 
 export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArtworkModalProps) {
-  console.log('EditArtworkModal received ID:', artworkId);
 
   const [formData, setFormData] = useState<ArtworkFormData>({
     id: '',
     title: '',
     slug: '',
-    description: '',
+    description: { en: '', bg: '' },
     price: 0,
     medium: '',
+    category: 'prints',
     year: new Date().getFullYear(),
-    dimensions: { width: 0, height: 0 },
+    dimensions: { width: 0, height: 0, unit: 'cm' },
     inStock: true,
     featured: false,
     images: [],
@@ -49,7 +58,6 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
   const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
-    console.log('UseEffect running with ID:', artworkId);
     if (!artworkId) {
       console.warn('No artwork ID provided to modal');
       return;
@@ -58,13 +66,10 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
     const fetchArtwork = async () => {
       setIsFetching(true);
       try {
-        console.log(`Fetching artwork with ID: ${artworkId}`);
         const url = `/api/artwork/${encodeURIComponent(artworkId)}`;
-        console.log(`Request URL: ${url}`);
 
         const response = await fetch(url);
 
-        console.log(`Response status: ${response.status}`);
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -79,16 +84,30 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
         }
 
         const data = await response.json();
-        console.log('Artwork data received:', data);
+
+        const raw = data.artwork;
+
+        // Rows written before the shop was bilingual hold a plain string.
+        const description =
+          typeof raw.description === 'string'
+            ? { en: raw.description, bg: raw.description }
+            : {
+                en: raw.description?.en ?? '',
+                bg: raw.description?.bg ?? '',
+              };
 
         setFormData({
-          ...data.artwork,
+          ...raw,
+          description,
           // Ensure proper type conversion for numeric fields
-          price: Number(data.artwork.price),
-          year: Number(data.artwork.year),
+          price: Number(raw.price),
+          year: Number(raw.year),
+          category: raw.category || 'prints',
           dimensions: {
-            width: Number(data.artwork.dimensions?.width || 0),
-            height: Number(data.artwork.dimensions?.height || 0),
+            width: Number(raw.dimensions?.width || 0),
+            height: Number(raw.dimensions?.height || 0),
+            // Carried through, so saving an edit cannot silently drop it.
+            unit: raw.dimensions?.unit || 'cm',
           },
         });
       } catch (error) {
@@ -107,15 +126,21 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
     const { name, value, type } = e.target;
 
     if (name.includes('.')) {
-      // Handle nested properties (for dimensions)
+      // Handle nested properties (dimensions, and the two descriptions)
       const [parent, child] = name.split('.');
-      if (parent === 'dimensions' && (child === 'width' || child === 'height')) {
+
+      if (parent === 'dimensions') {
         setFormData({
           ...formData,
           dimensions: {
             ...formData.dimensions,
             [child]: type === 'number' ? Number(value) : value,
           },
+        });
+      } else if (parent === 'description' && (child === 'en' || child === 'bg')) {
+        setFormData({
+          ...formData,
+          description: { ...formData.description, [child]: value },
         });
       }
     } else if (type === 'checkbox') {
@@ -199,7 +224,7 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-y-auto flex justify-center items-start pt-4 pb-20">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
         <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">Edit Artwork</h2>
+          <h2 className="text-xl font-bold mb-0">Edit Artwork</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -286,6 +311,26 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
                   </div>
 
                   <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                      Category *
+                    </label>
+                    <select
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      {CATEGORIES.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
                     <label htmlFor="year" className="block text-sm font-medium text-gray-700">
                       Year *
                     </label>
@@ -302,10 +347,10 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label htmlFor="dimensions.width" className="block text-sm font-medium text-gray-700">
-                        Width (cm)
+                        Width
                       </label>
                       <input
                         type="number"
@@ -321,7 +366,7 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
 
                     <div>
                       <label htmlFor="dimensions.height" className="block text-sm font-medium text-gray-700">
-                        Height (cm)
+                        Height
                       </label>
                       <input
                         type="number"
@@ -331,6 +376,20 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
                         onChange={handleChange}
                         min="0"
                         step="0.1"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="dimensions.unit" className="block text-sm font-medium text-gray-700">
+                        Unit
+                      </label>
+                      <input
+                        type="text"
+                        id="dimensions.unit"
+                        name="dimensions.unit"
+                        value={formData.dimensions.unit}
+                        onChange={handleChange}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                       />
                     </div>
@@ -369,15 +428,29 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
 
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                      Description
+                    <label htmlFor="description.en" className="block text-sm font-medium text-gray-700">
+                      Description (English)
                     </label>
                     <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description}
+                      id="description.en"
+                      name="description.en"
+                      value={formData.description.en}
                       onChange={handleChange}
-                      rows={6}
+                      rows={5}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="description.bg" className="block text-sm font-medium text-gray-700">
+                      Description (Bulgarian)
+                    </label>
+                    <textarea
+                      id="description.bg"
+                      name="description.bg"
+                      value={formData.description.bg}
+                      onChange={handleChange}
+                      rows={5}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>

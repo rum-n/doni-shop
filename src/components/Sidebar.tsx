@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import {
+  HIDE_DESKTOP_SIDEBAR_PATHS,
+  MOBILE_ITEMS,
+  SIDEBAR_ITEMS,
+} from "@/lib/navigation";
 
 interface SidebarProps {
   currentPath: string;
@@ -28,12 +33,7 @@ export default function Sidebar({
 
   const isHomepage = currentPath === "/";
   const isIndividualArtwork = currentPath.includes("/artwork/");
-
-  const navItems = [
-    { href: "/prints", label: "prints" },
-    { href: "/linocut-stamps", label: "linocutStamps" },
-    { href: "/accessories", label: "accessories" },
-  ];
+  const hideDesktopSidebar = HIDE_DESKTOP_SIDEBAR_PATHS.includes(currentPath);
 
   if (isIndividualArtwork) {
     return null;
@@ -45,7 +45,7 @@ export default function Sidebar({
       <div className="lg:hidden fixed top-4 right-6 z-50">
         <button
           onClick={toggleMenu}
-          className="w-12 h-12 bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-slate-200 flex items-center justify-center text-slate-800 hover:bg-white transition-all duration-300"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-card backdrop-blur-sm transition-all duration-300 hover:bg-surface hover:shadow-card-hover"
         >
           <svg
             className={`w-6 h-6 transition-transform duration-300 ${
@@ -68,23 +68,23 @@ export default function Sidebar({
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+          className="fixed inset-0 z-40 bg-ink/20 backdrop-blur-sm lg:hidden"
           onClick={toggleMenu}
         />
       )}
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden fixed left-0 top-0 h-full w-80 bg-white/95 backdrop-blur-sm border-r border-slate-200 z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 left-0 z-50 h-full w-80 transform border-r border-line bg-surface/95 backdrop-blur-sm transition-transform duration-300 lg:hidden ${
           isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex flex-col h-full p-8">
+        <div className="flex h-full flex-col p-8">
           {/* Artist Name */}
           <div className="mb-12">
             <Link
               href="/"
-              className="text-2xl uppercase font-playfair-regular text-slate-800 tracking-wider hover:text-slate-600 transition-colors duration-300"
+              className="font-display text-2xl font-normal uppercase tracking-wider text-ink transition-colors duration-300 hover:text-ink-muted"
               onClick={toggleMenu}
             >
               Doni Boyadzhieva
@@ -93,15 +93,15 @@ export default function Sidebar({
 
           {/* Navigation Items */}
           <div className="flex flex-col space-y-4">
-            {navItems.map((item) => (
+            {MOBILE_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={toggleMenu}
-                className={`px-6 py-4 rounded-xl transition-all duration-300 font-light tracking-wide ${
+                className={`rounded-media px-6 py-4 font-light tracking-wide transition-all duration-300 ${
                   isActive(item.href)
-                    ? "bg-slate-100 text-slate-800 border border-slate-200"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-800"
+                    ? "border border-line bg-surface-sunken text-ink"
+                    : "text-ink-soft hover:bg-surface-sunken hover:text-ink"
                 }`}
               >
                 <span className="text-lg">{t(item.label)}</span>
@@ -111,39 +111,43 @@ export default function Sidebar({
 
           {/* Footer */}
           <div className="mt-auto text-center">
-            <p className="text-xs text-slate-500 font-light">© 2024</p>
+            <p className="text-xs font-light text-ink-faint">
+              © {new Date().getFullYear()}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block fixed left-15 top-1/2 transform -translate-y-1/2 z-40">
-        <div className="flex flex-col space-y-6">
-          {/* Navigation Links */}
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`group relative font-playfair-regular tracking-wide transition-all duration-300 hover:underline hover:underline-offset-6 ${
-                isHomepage
-                  ? isActive(item.href)
-                    ? "text-white font-medium underline underline-offset-6"
-                    : "text-white hover:text-white"
-                  : isActive(item.href)
-                  ? "text-slate-800 font-medium underline underline-offset-6"
-                  : "text-slate-600 hover:text-slate-800"
-              }`}
-            >
-              <span className="text-lg group-hover:scale-105 transition-transform duration-300">
-                {t(item.label)}
-              </span>
-            </Link>
-          ))}
+      {!hideDesktopSidebar && (
+        <div className="hidden lg:block fixed left-15 top-1/2 transform -translate-y-1/2 z-40">
+          <div className="flex flex-col space-y-6">
+            {/* Navigation Links */}
+            {SIDEBAR_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`group relative font-display tracking-wide transition-all duration-300 hover:underline hover:underline-offset-[6px] ${
+                  isHomepage
+                    ? isActive(item.href)
+                      ? "font-medium text-white underline underline-offset-[6px]"
+                      : "font-normal text-white"
+                    : isActive(item.href)
+                      ? "font-medium text-ink underline underline-offset-[6px]"
+                      : "font-normal text-ink-soft hover:text-ink"
+                }`}
+              >
+                <span className="text-lg group-hover:scale-105 transition-transform duration-300">
+                  {t(item.label)}
+                </span>
+              </Link>
+            ))}
 
-          {/* Footer */}
-          <div className="mt-8"></div>
+            {/* Footer */}
+            <div className="mt-8"></div>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

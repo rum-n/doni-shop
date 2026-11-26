@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import AdminNavbar from "@/components/AdminNavbar";
 import Image from "next/image";
 import ImageUploader from "@/components/ImageUploader";
@@ -10,12 +9,7 @@ import { toast } from "react-hot-toast";
 import { ArtworkFormData } from "@/types/Artwork";
 
 export default function NewArtwork() {
-  const { status } = useSession();
   const router = useRouter();
-
-  if (status === "unauthenticated") {
-    router.push("/admin/login");
-  }
 
   const [formData, setFormData] = useState<ArtworkFormData>({
     title: "",

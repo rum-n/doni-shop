@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getAdminSession } from "@/lib/require-admin";
 import AdminNavbar from "@/components/AdminNavbar";
 import Link from "next/link";
 
 export default async function AdminDashboard() {
-  const session = await getServerSession(authOptions);
+  // Middleware already turns away non-admins; this is the second lock, so a
+  // routing change can never leave the dashboard open.
+  const session = await getAdminSession();
 
-  // Redirect if not authenticated
   if (!session) {
     redirect("/login");
   }

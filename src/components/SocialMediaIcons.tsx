@@ -59,14 +59,14 @@ export default function SocialMediaIcons({
         hideOnMobile ? "hidden lg:block" : ""
       } ${className}`}
     >
-      <div className="flex space-x-2 lg:space-x-3">
+      <div className="flex gap-2 lg:gap-3">
         {socialLinks.map((social) => (
           <Link
             key={social.name}
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-slate-200 hover:bg-white hover:shadow-xl transition-all duration-300 text-slate-600 hover:text-slate-800"
+            className="group flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface/80 text-ink-soft shadow-card backdrop-blur-sm transition-all duration-300 hover:bg-surface hover:text-ink hover:shadow-card-hover lg:h-12 lg:w-12"
             aria-label={`Follow on ${social.name}`}
           >
             <span className="group-hover:scale-110 transition-transform duration-300">

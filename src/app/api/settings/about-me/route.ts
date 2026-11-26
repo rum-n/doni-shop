@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { requireAdmin } from "@/lib/require-admin";
 import { db } from '@/lib/db';
 
 // GET endpoint to retrieve the current about me content
@@ -32,12 +31,8 @@ export async function GET() {
 // POST endpoint to update the about me content
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
     // Parse request body
     const { content } = await request.json();

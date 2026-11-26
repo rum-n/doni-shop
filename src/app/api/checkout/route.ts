@@ -1,62 +1,132 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import stripe from "@/lib/stripe";
+import { routing } from "@/i18n/routing";
+import { SHIPPING_COUNTRIES } from "@/lib/shipping";
+
+// Stripe caps a metadata value at 500 characters. A 24-character ObjectId plus
+// a separator is 25, so this many ids always fit.
+const MAX_ITEMS = 19;
+
+function resolveBaseUrl(request: Request): string {
+  if (process.env.NEXT_PUBLIC_BASE_URL) {
+    return process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, "");
+  }
+
+  const host = request.headers.get("host") || "localhost:3000";
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  return `${protocol}://${host}`;
+}
 
 export async function POST(request: Request) {
   try {
-    const { artworkId } = await request.json();
+    const body = await request.json();
 
-    // Get the host from the request headers for URL construction
-    const { headers } = request;
-    const host = headers.get("host") || "localhost:3000";
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`;
+    // `artworkIds` is the cart; `artworkId` is the single-item "Buy now" path.
+    const requested: unknown = Array.isArray(body.artworkIds)
+      ? body.artworkIds
+      : body.artworkId
+      ? [body.artworkId]
+      : [];
 
-    // Fetch artwork details
-    const artwork = await db.artwork.findUnique({
-      where: { id: artworkId },
+    const artworkIds = Array.from(
+      new Set(
+        (requested as unknown[]).filter(
+          (id): id is string => typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id)
+        )
+      )
+    );
+
+    if (artworkIds.length === 0) {
+      return NextResponse.json(
+        { message: "No artwork was selected" },
+        { status: 400 }
+      );
+    }
+
+    if (artworkIds.length > MAX_ITEMS) {
+      return NextResponse.json(
+        { message: `A single order can hold at most ${MAX_ITEMS} items` },
+        { status: 400 }
+      );
+    }
+
+    const locale =
+      typeof body.locale === "string" &&
+      (routing.locales as readonly string[]).includes(body.locale)
+        ? body.locale
+        : routing.defaultLocale;
+
+    const artworks = await db.artwork.findMany({
+      where: { id: { in: artworkIds } },
     });
 
-    if (!artwork) {
+    if (artworks.length !== artworkIds.length) {
       return NextResponse.json(
         { message: "Artwork not found" },
         { status: 404 }
       );
     }
 
-    if (!artwork.inStock) {
+    // Every piece is one of a kind, so anything already sold has to be removed
+    // from the cart before the buyer can pay. Name them so the cart can say
+    // which ones went.
+    const sold = artworks.filter((artwork) => !artwork.inStock);
+
+    if (sold.length > 0) {
       return NextResponse.json(
-        { message: "Artwork is not available for purchase" },
-        { status: 400 }
+        {
+          message: "Some items are no longer available",
+          unavailable: sold.map((artwork) => ({
+            id: artwork.id,
+            title: artwork.title,
+          })),
+        },
+        { status: 409 }
       );
     }
 
-    // Create Stripe checkout session - omit images entirely for now
+    const baseUrl = resolveBaseUrl(request);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: [
-        {
+      line_items: artworks.map((artwork) => {
+        const description =
+          typeof artwork.description === "string"
+            ? artwork.description
+            : (artwork.description as { en?: string; bg?: string })?.en || "";
+
+        return {
           price_data: {
             currency: "eur",
             product_data: {
               name: artwork.title,
-              description:
-                typeof artwork.description === "string"
-                  ? artwork.description
-                  : (artwork.description as { en?: string; bg?: string })?.en ||
-                    "",
-              // Omitting images to avoid URL issues
+              // Stripe rejects an empty string, so send the field only if set
+              ...(description ? { description: description.slice(0, 500) } : {}),
+              images: (artwork.images as { url?: string }[] | null)
+                ?.map((image) => image?.url)
+                .filter((url): url is string => typeof url === "string")
+                .slice(0, 8),
             },
             unit_amount: Math.round(artwork.price * 100),
           },
           quantity: 1,
-        },
-      ],
+        };
+      }),
       mode: "payment",
-      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/artwork/${artwork.slug}`,
+      locale,
+      // These are physical prints: without an address there is nothing to ship to.
+      shipping_address_collection: {
+        allowed_countries: [...SHIPPING_COUNTRIES],
+      },
+      phone_number_collection: { enabled: true },
+      success_url: `${baseUrl}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url:
+        artworks.length === 1
+          ? `${baseUrl}/${locale}/artwork/${artworks[0].slug}`
+          : `${baseUrl}/${locale}/cart`,
       metadata: {
-        artworkId: artwork.id,
+        artworkIds: artworkIds.join(","),
       },
     });
 
@@ -64,10 +134,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Checkout error:", error);
     return NextResponse.json(
-      {
-        message: "Error creating checkout session",
-        error: (error as Error).message,
-      },
+      { message: "Error creating checkout session" },
       { status: 500 }
     );
   }

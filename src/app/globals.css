@@ -1,19 +1,61 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens
+   
+   One place for colour, radius, shadow and rhythm. Tailwind 4 turns each token
+   into a utility, so `--color-ink` gives `text-ink`, `--radius-card` gives
+   `rounded-card`, and so on. Prefer these over raw palette steps: a literal
+   `slate-600` in a component is how the old gray/blue/green drift started.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Display face. Registered as a token so component classes can @apply it;
+     `@apply font-playfair-regular` cannot work, because that is a plain CSS
+     class rather than a Tailwind utility. */
+  --font-display: var(--font-playfair), serif;
+
+  /* Surfaces, from the page backdrop up to a raised card */
+  --color-canvas: oklch(98.4% 0.003 247.86);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-sunken: oklch(96.8% 0.005 247.86);
+  --color-line: oklch(92.9% 0.009 247.88);
+  --color-line-strong: oklch(86.9% 0.016 248.1);
+
+  /* Text, strongest to faintest */
+  --color-ink: oklch(27.9% 0.032 256.85);
+  --color-ink-soft: oklch(44.6% 0.03 256.8);
+  --color-ink-muted: oklch(55.4% 0.033 257.42);
+  --color-ink-faint: oklch(70.4% 0.03 256.79);
+
+  /* The one interactive accent. Deliberately a deep neutral: the artwork
+     supplies the colour on this site, the chrome should not compete. */
+  --color-accent: oklch(37.2% 0.036 259.73);
+  --color-accent-hover: oklch(27.9% 0.032 256.85);
+  --color-on-accent: oklch(100% 0 0);
+
+  /* Status. Only for genuine state, never decoration. */
+  --color-notice: oklch(96.2% 0.045 89.7);
+  --color-notice-line: oklch(89.5% 0.08 87.5);
+  --color-notice-ink: oklch(47.3% 0.098 73.6);
+  --color-danger: oklch(96.5% 0.021 17.4);
+  --color-danger-line: oklch(88.5% 0.055 18.3);
+  --color-danger-ink: oklch(50.5% 0.173 24.5);
+
+  /* Two radii for everything: panels and media, plus full for controls */
+  --radius-card: 1rem;
+  --radius-media: 0.75rem;
+
+  /* Two elevations: at rest, and lifted on hover */
+  --shadow-card: 0 1px 2px oklch(27.9% 0.032 256.85 / 0.04),
+    0 1px 3px oklch(27.9% 0.032 256.85 / 0.06);
+  --shadow-card-hover: 0 4px 12px oklch(27.9% 0.032 256.85 / 0.06),
+    0 12px 28px oklch(27.9% 0.032 256.85 / 0.08);
+}
+
 body {
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-}
-
-h1 {
-  @apply text-5xl font-bold mb-4;
-}
-
-h2 {
-  @apply text-3xl font-bold mb-4;
-}
-
-h3 {
-  @apply text-2xl font-bold mb-4;
+  background-color: var(--color-canvas);
+  color: var(--color-ink-soft);
 }
 
 /* Playfair Display font classes */
@@ -44,4 +86,257 @@ h3 {
 .font-playfair-bold {
   font-family: var(--font-playfair), serif;
   font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------------
+   Components
+
+   The storefront repeats a handful of shapes: a page shell, a card, a pill, a
+   button, a field. Naming them keeps spacing and colour identical everywhere
+   and makes a change one edit instead of twenty.
+
+   Global h1/h2/h3 rules used to live here with `text-5xl font-bold mb-4`,
+   which quietly fought every page's own typography. Headings are explicit now.
+--------------------------------------------------------------------------- */
+@layer components {
+  /* Page rhythm --------------------------------------------------------- */
+  .page-shell {
+    @apply px-4 py-8 lg:px-12 lg:py-12;
+  }
+
+  .page-width {
+    @apply mx-auto w-full max-w-6xl;
+  }
+
+  .page-width-narrow {
+    @apply mx-auto w-full max-w-3xl;
+  }
+
+  .page-header {
+    @apply mb-10 text-center lg:mb-14;
+  }
+
+  .page-title {
+    @apply font-display text-3xl font-normal tracking-wide text-ink lg:text-5xl;
+  }
+
+  .page-intro {
+    @apply mx-auto mt-3 max-w-2xl text-base font-light leading-relaxed text-ink-soft lg:text-lg;
+  }
+
+  .section-title {
+    @apply font-display text-xl font-normal tracking-wide text-ink lg:text-2xl;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-light uppercase tracking-[0.12em] text-ink-faint;
+  }
+
+  .meta-text {
+    @apply text-sm font-light text-ink-muted;
+  }
+
+  /* Surfaces ------------------------------------------------------------ */
+  .card {
+    @apply rounded-card border border-line bg-surface/80 shadow-card backdrop-blur-sm;
+  }
+
+  /* Composes with .card: class="card card-interactive" */
+  .card-interactive {
+    @apply transition-all duration-300 hover:border-line-strong hover:shadow-card-hover;
+  }
+
+  .card-pad {
+    @apply p-5 lg:p-6;
+  }
+
+  .panel-pad {
+    @apply p-6 lg:p-10;
+  }
+
+  .media-frame {
+    @apply relative overflow-hidden rounded-media bg-surface-sunken;
+  }
+
+  /* Controls ------------------------------------------------------------ */
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center rounded-full px-8 py-3 text-base font-light tracking-wide transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* Both compose with .btn: class="btn btn-primary" */
+  .btn-primary {
+    @apply bg-accent text-on-accent hover:bg-accent-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-surface text-ink-soft hover:border-line-strong hover:bg-surface-sunken;
+  }
+
+  .btn-block {
+    @apply w-full;
+  }
+
+  .pill-group {
+    @apply inline-flex rounded-full border border-line p-0.5;
+  }
+
+  .pill {
+    @apply cursor-pointer whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-light tracking-wide transition-all duration-300;
+  }
+
+  /* Both compose with .pill: class="pill pill-active" */
+  .pill-idle {
+    @apply text-ink-muted hover:bg-surface-sunken hover:text-ink-soft;
+  }
+
+  .pill-active {
+    @apply bg-accent text-on-accent;
+  }
+
+  /* Pill-shaped control, for selects and filter widgets */
+  .field {
+    @apply w-full rounded-full border border-line bg-surface px-4 py-2 text-sm font-light text-ink-soft transition-colors duration-300 focus:border-line-strong focus:outline-none;
+  }
+
+  /* Text input. Softer corners than .field, because a long value reads badly
+     inside a pill. */
+  .input {
+    @apply w-full rounded-media border border-line bg-surface px-4 py-2.5 text-base font-light text-ink transition-colors duration-300 placeholder:text-ink-faint focus:border-accent focus:outline-none;
+  }
+
+  .input-label {
+    @apply mb-2 block text-sm font-light text-ink-soft;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-light tracking-wide;
+  }
+
+  /* Both compose with .badge: class="badge badge-sold" */
+  .badge-sold {
+    @apply bg-accent/90 text-on-accent;
+  }
+
+  .badge-quiet {
+    @apply border border-line bg-surface-sunken text-ink-muted;
+  }
+
+  .notice {
+    @apply rounded-card border border-notice-line bg-notice px-5 py-4 font-light leading-relaxed text-notice-ink;
+  }
+
+  .notice-error {
+    @apply rounded-card border border-danger-line bg-danger px-5 py-4 font-light leading-relaxed text-danger-ink;
+  }
+
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-line border-t-accent;
+  }
+
+  /* Admin-authored markdown (the About page, the homepage intro).
+     Tailwind's preflight strips heading sizes, paragraph margins and list
+     markers, and @tailwindcss/typography is not installed, so `prose` would be
+     inert. These rules are the house style for rich text, on the same tokens
+     as everything else. */
+  .rich-text {
+    @apply font-light leading-relaxed text-ink-soft;
+  }
+
+  .rich-text > * + * {
+    @apply mt-5;
+  }
+
+  .rich-text h1,
+  .rich-text h2,
+  .rich-text h3,
+  .rich-text h4 {
+    @apply font-display font-normal tracking-wide text-ink;
+  }
+
+  .rich-text h1 {
+    @apply text-2xl lg:text-3xl;
+  }
+
+  .rich-text h2 {
+    @apply text-xl lg:text-2xl;
+  }
+
+  .rich-text h3 {
+    @apply text-lg lg:text-xl;
+  }
+
+  .rich-text h4 {
+    @apply text-base lg:text-lg;
+  }
+
+  .rich-text > * + :is(h1, h2, h3, h4) {
+    @apply mt-10;
+  }
+
+  .rich-text a {
+    @apply text-ink underline decoration-line-strong underline-offset-4 transition-colors hover:decoration-accent;
+  }
+
+  .rich-text strong {
+    @apply font-medium text-ink;
+  }
+
+  .rich-text em {
+    @apply italic;
+  }
+
+  .rich-text ul,
+  .rich-text ol {
+    @apply space-y-2 pl-6;
+  }
+
+  .rich-text ul {
+    @apply list-disc;
+  }
+
+  .rich-text ol {
+    @apply list-decimal;
+  }
+
+  .rich-text li::marker {
+    color: var(--color-ink-faint);
+  }
+
+  .rich-text blockquote {
+    @apply border-l-2 border-line-strong pl-5 text-ink-muted italic;
+  }
+
+  .rich-text hr {
+    @apply border-line;
+  }
+
+  .rich-text img {
+    @apply rounded-media;
+  }
+
+  .rich-text code {
+    @apply rounded bg-surface-sunken px-1.5 py-0.5 text-sm;
+  }
+
+  /* Same rich text, over imagery or video */
+  .rich-text-invert {
+    @apply text-white;
+  }
+
+  .rich-text-invert :is(h1, h2, h3, h4),
+  .rich-text-invert strong {
+    @apply text-white;
+  }
+
+  .rich-text-invert a {
+    @apply text-white decoration-white/60 hover:decoration-white;
+  }
+
+  .rich-text-invert blockquote {
+    @apply border-white/40 text-white/80;
+  }
+
+  .rich-text-invert li::marker {
+    color: rgb(255 255 255 / 0.6);
+  }
 }

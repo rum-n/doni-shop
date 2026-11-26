@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Artwork } from "@/types/Artwork";
 
 interface CategoryGalleryProps {
@@ -16,6 +17,7 @@ export default function CategoryGallery({
   title,
   description,
 }: CategoryGalleryProps) {
+  const t = useTranslations("CategoryPages");
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,23 +50,17 @@ export default function CategoryGallery({
   }
 
   return (
-    <div className="p-4 lg:p-12">
+    <div className="page-shell page-width">
       {/* Header */}
-      <div className="mb-8 lg:mb-16 text-center">
-        <h1 className="text-3xl lg:text-5xl font-playfair-regular text-slate-800 mb-4 lg:mb-6 tracking-wide">
-          {title}
-        </h1>
-        {description && (
-          <p className="text-lg lg:text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed px-4">
-            {description}
-          </p>
-        )}
-      </div>
+      <header className="page-header">
+        <h1 className="page-title">{title}</h1>
+        {description && <p className="page-intro">{description}</p>}
+      </header>
 
       {/* Loading State */}
       {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-300"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="spinner h-10 w-10" />
         </div>
       ) : (
         /* Artwork Grid - Rows of Two Centered */
@@ -83,36 +79,38 @@ export default function CategoryGallery({
                     href={`/artwork/${artwork.slug}`}
                     className="group block w-full max-w-md lg:max-w-lg"
                   >
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-500 border border-slate-200 hover:border-slate-300">
-                      <div className="relative h-64 sm:h-80 lg:h-96">
+                    <div className="card card-interactive overflow-hidden">
+                      {/* contain rather than cover, so no artwork is cropped */}
+                      <div className="media-frame h-64 rounded-b-none p-3 sm:h-80 lg:h-96">
                         {artwork.images && artwork.images[0] ? (
                           <Image
                             src={artwork.images[0].url}
                             alt={artwork.title}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 512px"
+                            className="object-contain"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-slate-50 to-gray-50 flex items-center justify-center">
-                            <span className="text-slate-400 font-light">
-                              No image available
+                          <div className="flex h-full w-full items-center justify-center">
+                            <span className="font-light text-ink-faint">
+                              {t("noImage")}
                             </span>
                           </div>
                         )}
                         {!artwork.inStock && (
-                          <div className="absolute top-4 right-4 bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-light">
-                            SOLD
-                          </div>
+                          <span className="badge badge-sold absolute top-4 right-4">
+                            {t("soldBadge")}
+                          </span>
                         )}
                       </div>
-                      <div className="p-4 lg:p-6">
-                        <h3 className="text-lg lg:text-xl font-playfair-regular text-slate-800 mb-2 group-hover:text-slate-600 transition-colors">
+                      <div className="card-pad">
+                        <h2 className="mb-2 font-display text-lg font-normal tracking-wide text-ink transition-colors group-hover:text-ink-muted lg:text-xl">
                           {artwork.title}
-                        </h3>
-                        <p className="text-sm text-slate-600 mb-3 font-light">
+                        </h2>
+                        <p className="meta-text mb-3">
                           {artwork.medium}, {artwork.year}
                         </p>
-                        <p className="text-lg font-light text-slate-700">
+                        <p className="text-lg font-light text-ink-soft">
                           {artwork.price} EUR
                         </p>
                       </div>
@@ -127,10 +125,8 @@ export default function CategoryGallery({
 
       {/* Empty State */}
       {!isLoading && artworks.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-xl text-slate-500 font-light">
-            No artworks found in this category.
-          </p>
+        <div className="py-16 text-center">
+          <p className="text-lg font-light text-ink-muted">{t("noArtworks")}</p>
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState } from "react";
+import Image from "next/image";
 
 interface ImageGalleryProps {
   images: { url: string; alt?: string }[];
@@ -11,19 +11,21 @@ interface ImageGalleryProps {
 export default function ImageGallery({ images, title }: ImageGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Early return if no images
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-200 flex items-center justify-center rounded-md">
-        <p className="text-gray-500">No image available</p>
+      <div className="media-frame flex aspect-square items-center justify-center">
+        <p className="font-light text-ink-faint">No image available</p>
       </div>
     );
   }
 
+  const step = (delta: number) =>
+    setCurrentIndex((prev) => (prev + delta + images.length) % images.length);
+
   return (
     <div className="space-y-4">
-      {/* Main image */}
-      <div className="relative aspect-square bg-gray-100 rounded-md overflow-hidden">
+      {/* contain, not cover: the whole artwork, never a crop of it */}
+      <div className="media-frame aspect-square p-3">
         <Image
           src={images[currentIndex].url}
           alt={images[currentIndex].alt || title}
@@ -33,42 +35,69 @@ export default function ImageGallery({ images, title }: ImageGalleryProps) {
           priority
         />
 
-        {/* Navigation arrows for larger screens */}
         {images.length > 1 && (
           <>
             <button
-              onClick={() => setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 text-gray-800 shadow-md hidden md:block"
+              onClick={() => step(-1)}
+              aria-label="Previous image"
+              className="absolute top-1/2 left-3 hidden -translate-y-1/2 cursor-pointer rounded-full border border-line bg-surface/80 p-2 text-ink-soft shadow-card backdrop-blur-sm transition-all duration-300 hover:bg-surface hover:text-ink md:block"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
             <button
-              onClick={() => setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-2 text-gray-800 shadow-md hidden md:block"
+              onClick={() => step(1)}
+              aria-label="Next image"
+              className="absolute top-1/2 right-3 hidden -translate-y-1/2 cursor-pointer rounded-full border border-line bg-surface/80 p-2 text-ink-soft shadow-card backdrop-blur-sm transition-all duration-300 hover:bg-surface hover:text-ink md:block"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           </>
         )}
       </div>
 
-      {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex space-x-2 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-1">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden ${index === currentIndex ? 'ring-2 ring-blue-500' : 'opacity-70'
-                }`}
+              aria-label={`View image ${index + 1}`}
+              aria-current={index === currentIndex ? "true" : undefined}
+              className={`media-frame h-20 w-20 flex-shrink-0 cursor-pointer border transition-all duration-300 ${
+                index === currentIndex
+                  ? "border-accent opacity-100"
+                  : "border-line opacity-60 hover:opacity-100"
+              }`}
             >
               <Image
                 src={image.url}
-                alt={image.alt || `${title} - Image ${index + 1}`}
+                alt={image.alt || `${title} - image ${index + 1}`}
                 fill
                 className="object-cover"
                 sizes="80px"

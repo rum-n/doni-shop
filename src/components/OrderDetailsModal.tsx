@@ -2,10 +2,32 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+import { ORDER_STATUSES, type OrderStatus } from "@/types/Order";
+
+const STATUS_STYLES: Record<OrderStatus, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  processing: "bg-blue-100 text-blue-800",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-gray-200 text-gray-700",
+};
+
+interface ShippingAddress {
+  name?: string | null;
+  phone?: string | null;
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  state?: string | null;
+  country?: string | null;
+}
 
 interface OrderDetailsModalProps {
   orderId: string | null;
   onClose: () => void;
+  /** Lets the orders table reflect a status change without a full reload. */
+  onStatusChange?: (orderId: string, status: OrderStatus) => void;
 }
 
 interface OrderItem {
@@ -25,7 +47,9 @@ interface Order {
   id: string;
   orderNumber: string;
   total: number;
+  status: OrderStatus;
   createdAt: string;
+  shippingAddress: ShippingAddress | null;
   customer: {
     name: string | null;
     email: string;
@@ -36,9 +60,11 @@ interface Order {
 export default function OrderDetailsModal({
   orderId,
   onClose,
+  onStatusChange,
 }: OrderDetailsModalProps) {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -60,6 +86,34 @@ export default function OrderDetailsModal({
     fetchOrderDetails();
   }, [orderId]);
 
+  const handleStatusChange = async (status: OrderStatus) => {
+    if (!orderId || !order || status === order.status) return;
+
+    setSavingStatus(true);
+    const previous = order.status;
+    // Show the new value straight away, and put it back if the save fails.
+    setOrder({ ...order, status });
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update status");
+
+      onStatusChange?.(orderId, status);
+      toast.success(`Order marked as ${status}`);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      setOrder({ ...order, status: previous });
+      toast.error("Could not update the order status");
+    } finally {
+      setSavingStatus(false);
+    }
+  };
+
   if (!orderId) return null;
 
   return (
@@ -67,7 +121,7 @@ export default function OrderDetailsModal({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Order Details</h2>
+            <h2 className="text-2xl font-bold mb-0">Order Details</h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700"
@@ -113,6 +167,36 @@ export default function OrderDetailsModal({
                       <span className="font-medium">Total Amount:</span>{" "}
                       {order.total.toFixed(2)} EUR
                     </p>
+                    <div className="flex items-center gap-3 pt-1">
+                      <label
+                        htmlFor="order-status"
+                        className="font-medium"
+                      >
+                        Status:
+                      </label>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          STATUS_STYLES[order.status]
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                      <select
+                        id="order-status"
+                        value={order.status}
+                        disabled={savingStatus}
+                        onChange={(e) =>
+                          handleStatusChange(e.target.value as OrderStatus)
+                        }
+                        className="border border-gray-300 rounded px-2 py-1 text-sm disabled:opacity-50"
+                      >
+                        {ORDER_STATUSES.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -130,6 +214,52 @@ export default function OrderDetailsModal({
                       {order.customer.email}
                     </p>
                   </div>
+
+                  <h3 className="text-lg font-semibold mt-5 mb-3">
+                    Shipping Address
+                  </h3>
+                  {order.shippingAddress ? (
+                    <address className="text-sm not-italic leading-relaxed text-gray-700">
+                      {order.shippingAddress.name && (
+                        <>
+                          {order.shippingAddress.name}
+                          <br />
+                        </>
+                      )}
+                      {order.shippingAddress.line1}
+                      <br />
+                      {order.shippingAddress.line2 && (
+                        <>
+                          {order.shippingAddress.line2}
+                          <br />
+                        </>
+                      )}
+                      {[
+                        order.shippingAddress.postalCode,
+                        order.shippingAddress.city,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      <br />
+                      {[
+                        order.shippingAddress.state,
+                        order.shippingAddress.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                      {order.shippingAddress.phone && (
+                        <>
+                          <br />
+                          {order.shippingAddress.phone}
+                        </>
+                      )}
+                    </address>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No address on this order. Orders placed before address
+                      collection was added will not have one.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -195,7 +325,7 @@ export default function OrderDetailsModal({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            ${item.price.toFixed(2)}
+                            {item.price.toFixed(2)} EUR
                           </div>
                         </td>
                       </tr>

@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/require-admin";
 import { db } from "@/lib/db";
-import { authOptions } from "@/lib/auth";
-import { getServerSession } from "next-auth";
+import { normalizeArtwork } from "@/lib/artwork";
+import { deleteImages } from "@/lib/cloudinary";
+
+// Images are uploaded to Cloudinary by the browser, so the client only ever
+// sends us URLs. Reject anything that is not a Cloudinary URL.
+const CLOUDINARY_URL_PREFIX = "https://res.cloudinary.com/";
 
 export async function GET(
   request: Request,
@@ -40,7 +45,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ artwork });
+    return NextResponse.json({ artwork: normalizeArtwork(artwork) });
   } catch (error) {
     console.error("Error fetching artwork:", error);
     return NextResponse.json(
@@ -55,25 +60,82 @@ export async function PUT(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
     const body = await request.json();
     const slugOrId = (await params).slug;
 
-    // Validate required fields
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const slug = typeof body.slug === "string" ? body.slug.trim() : "";
+    const medium = typeof body.medium === "string" ? body.medium.trim() : "";
+    const category =
+      typeof body.category === "string" ? body.category.trim() : "";
+
+    // Numbers arrive as strings from the form, and a price of 0 is legitimate,
+    // so test for a finite number rather than for truthiness.
+    const price = Number(body.price);
+    const year = Number(body.year);
+
+    const descriptionEn =
+      typeof body.description === "string"
+        ? body.description
+        : typeof body.description?.en === "string"
+        ? body.description.en
+        : "";
+    const descriptionBg =
+      typeof body.description === "string"
+        ? body.description
+        : typeof body.description?.bg === "string"
+        ? body.description.bg
+        : "";
+
+    const width = Number(body.dimensions?.width);
+    const height = Number(body.dimensions?.height);
+    const unit =
+      typeof body.dimensions?.unit === "string"
+        ? body.dimensions.unit.trim()
+        : "";
+
     if (
-      !body.title ||
-      !body.slug ||
-      !body.price ||
-      !body.medium ||
-      !body.year
+      !title ||
+      !slug ||
+      !medium ||
+      !category ||
+      !Number.isFinite(price) ||
+      price < 0 ||
+      !Number.isFinite(year)
     ) {
       return NextResponse.json(
         { message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Same rule as creation: the browser uploads to Cloudinary and sends URLs,
+    // so anything else is either a mistake or someone poking at the endpoint.
+    const submittedImages = Array.isArray(body.images) ? body.images : [];
+    const images: { url: string; alt: string }[] = [];
+
+    for (const image of submittedImages) {
+      const url = typeof image?.url === "string" ? image.url : "";
+
+      if (!url.startsWith(CLOUDINARY_URL_PREFIX)) {
+        return NextResponse.json(
+          { message: "Images must be uploaded before saving" },
+          { status: 400 }
+        );
+      }
+
+      images.push({
+        url,
+        alt: typeof image?.alt === "string" && image.alt ? image.alt : title,
+      });
+    }
+
+    if (images.length === 0) {
+      return NextResponse.json(
+        { message: "At least one image is required" },
         { status: 400 }
       );
     }
@@ -98,10 +160,10 @@ export async function PUT(
     }
 
     // Check if slug is unique (excluding the current artwork)
-    if (body.slug !== existingArtwork.slug) {
+    if (slug !== existingArtwork.slug) {
       const slugExists = await db.artwork.findFirst({
         where: {
-          slug: body.slug,
+          slug,
           id: { not: existingArtwork.id },
         },
       });
@@ -118,16 +180,29 @@ export async function PUT(
     const updatedArtwork = await db.artwork.update({
       where: { id: existingArtwork.id },
       data: {
-        title: body.title,
-        slug: body.slug,
-        description: body.description,
-        price: body.price,
-        medium: body.medium,
-        year: body.year,
-        dimensions: body.dimensions,
-        inStock: body.inStock,
-        featured: body.featured,
-        images: body.images,
+        title,
+        slug,
+        description: { en: descriptionEn, bg: descriptionBg },
+        price,
+        medium,
+        // Was never written before, so an artwork could not change category.
+        category,
+        year,
+        dimensions: {
+          width: Number.isFinite(width) ? width : 0,
+          height: Number.isFinite(height) ? height : 0,
+          // Falling back to the stored unit keeps an older row's value rather
+          // than blanking it.
+          unit:
+            unit ||
+            String(
+              (existingArtwork.dimensions as { unit?: string } | null)?.unit ??
+                ""
+            ),
+        },
+        inStock: Boolean(body.inStock),
+        featured: Boolean(body.featured),
+        images,
       },
     });
 
@@ -146,11 +221,8 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
     const slugOrId = (await params).slug;
 
@@ -191,10 +263,23 @@ export async function DELETE(
       );
     }
 
-    // Delete artwork
+    // Collect the image URLs before the row goes, so the uploaded files can be
+    // cleaned up afterwards rather than lingering in Cloudinary forever.
+    const imageUrls = (existingArtwork.images ?? [])
+      .map((image) =>
+        typeof image === "object" && image !== null && "url" in image
+          ? (image as { url?: unknown }).url
+          : null
+      )
+      .filter((url): url is string => typeof url === "string");
+
     await db.artwork.delete({
       where: { id: existingArtwork.id },
     });
+
+    // Best effort, and deliberately after the row is gone: the record being
+    // deleted is what the caller asked for.
+    await deleteImages(imageUrls);
 
     return NextResponse.json({ message: "Artwork deleted successfully" });
   } catch (error) {

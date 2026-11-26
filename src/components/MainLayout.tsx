@@ -13,29 +13,22 @@ interface MainLayoutProps {
 export default function MainLayout({ children, currentPath }: MainLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleMenuStateChange = (isOpen: boolean) => {
-    setIsMobileMenuOpen(isOpen);
-  };
-
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-gray-50">
-      {/* Floating Navigation Buttons */}
+    // `min-h-screen` with normal document scrolling, rather than a fixed-height
+    // shell with an inner `overflow-auto` pane: the nested scroller broke
+    // scroll restoration and fought the mobile address bar.
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <TopNav currentPath={currentPath} />
+
       <Sidebar
         currentPath={currentPath}
-        onMenuStateChange={handleMenuStateChange}
+        onMenuStateChange={setIsMobileMenuOpen}
       />
 
-      {/* Social Media Icons - Hidden on mobile when menu is open */}
       <SocialMediaIcons hideOnMobile={isMobileMenuOpen} />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <TopNav currentPath={currentPath} />
-
-        {/* Main Content */}
-        <main className="flex-1 pt-20 lg:pt-20 overflow-auto">{children}</main>
-      </div>
+      {/* pt-20 clears the fixed header */}
+      <main className="flex-1 pt-20">{children}</main>
     </div>
   );
 }

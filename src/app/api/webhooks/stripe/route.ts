@@ -44,6 +44,15 @@ export async function POST(request: Request) {
           `Ignored checkout session ${event.data.object.id}: ${result.reason}`
         );
       }
+
+      // Paid for, but the piece had already gone. The order exists so the
+      // payment is not lost; someone has to refund or reprint.
+      if (result.status === "created" && result.oversold.length > 0) {
+        console.error(
+          `Order ${result.orderId} contains already-sold items and needs ` +
+            `manual resolution: ${result.oversold.join(", ")}`
+        );
+      }
     }
 
     return NextResponse.json({ received: true });

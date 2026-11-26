@@ -9,23 +9,22 @@
       "button": "View details"
     }
   },
-  "GalleryPage": {
-    "title": "Art Gallery",
+  "ShopPage": {
+    "title": "Shop",
     "description": "Explore the complete collection of original artworks.",
+    "availability": "Availability",
     "filters": {
       "all": "All artworks",
       "available": "Available",
       "sold": "Sold"
-    }
-  },
-  "ShopPage": {
+    },
     "sort": "Sort by",
     "newest": "Newest",
     "oldest": "Oldest",
     "price-asc": "Price: Low to High",
     "price-desc": "Price: High to Low",
     "price": "Price",
-    "all": "All",
+    "all": "All prices",
     "under500": "Under 500 EUR",
     "500to1000": "500 - 1000 EUR",
     "over1000": "Over 1000 EUR",
@@ -35,8 +34,9 @@
     "noArtworks": "No artworks matching your criteria.",
     "removeFilters": "Remove filters",
     "ctaTitle": "Looking for something special?",
-    "ctaText": "If you don't find exactly what you're looking for, consider a custom order. Violeta creates unique artworks tailored to your taste and space.",
-    "ctaButton": "Request a custom order"
+    "ctaText": "If you don't find exactly what you're looking for, consider a custom order. Doni creates unique artworks tailored to your taste and space.",
+    "ctaButton": "Request a custom order",
+    "soldBadge": "Sold"
   },
   "ArtworkPage": {
     "buttons": {
@@ -62,17 +62,25 @@
       "button": "Contact the Artist"
     },
     "checkout": {
-      "secure": "Secure checkout • Shipping available worldwide"
+      "secure": "Secure checkout • Shipping within the EU"
     },
     "noImage": "No image available"
   },
   "Navigation": {
+    "shop": "Shop",
     "prints": "Prints",
     "linocutStamps": "Linocut Stamps",
     "accessories": "Accessories",
+    "contact": "Contact",
     "cart": "Cart"
   },
-  "AboutPage": {},
+  "AboutPage": {
+    "title": "About me",
+    "empty": "No content has been added yet.",
+    "ctaTitle": "Explore the artworks",
+    "ctaPrints": "Prints",
+    "ctaLinocuts": "Linocut Stamps"
+  },
   "CategoryPages": {
     "prints": {
       "title": "Prints",
@@ -85,11 +93,52 @@
     "accessories": {
       "title": "Accessories",
       "description": "Everyday objects with custom designs"
-    }
+    },
+    "soldBadge": "Sold",
+    "noArtworks": "No artworks in this category yet.",
+    "noImage": "No image available"
   },
   "BuyButton": {
     "text": "Buy now",
     "processing": "Processing...",
     "soldOut": "Sold out"
+  },
+  "Cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty.",
+    "browse": "Browse the artworks",
+    "total": "Total",
+    "checkout": "Proceed to checkout",
+    "processing": "Processing...",
+    "addToCart": "Add to cart",
+    "removeFromCart": "Remove from cart",
+    "added": "“{title}” was added to your cart",
+    "removed": "“{title}” was removed from your cart",
+    "soldRemoved": "No longer available, removed from your cart: {titles}",
+    "checkoutFailed": "Checkout could not be started. Please try again.",
+    "shippingNote": "Secure checkout • Shipping within the EU"
+  },
+  "CheckoutSuccess": {
+    "title": "Thank you for your purchase!",
+    "subtitle": "Your payment went through.",
+    "stillProcessing": "Your payment was received and your order is being recorded. It will appear here shortly — there is no need to pay again.",
+    "orderNumber": "Order number",
+    "date": "Date",
+    "total": "Total",
+    "shippingTo": "Shipping to",
+    "continue": "Browse more artworks"
+  },
+  "ContactPage": {
+    "title": "Contact",
+    "intro": "Get in touch about a particular piece, a commission, or shipping.",
+    "emailLabel": "Email",
+    "responseTime": "I usually reply within a few days.",
+    "noEmail": "The easiest way to reach me is through the social accounts below.",
+    "socialsLabel": "Find me on"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "body": "This page does not exist, or it has moved.",
+    "home": "Back to the home page"
   }
 }

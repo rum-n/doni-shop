@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import AdminNavbar from '@/components/AdminNavbar';
@@ -15,15 +13,6 @@ export default function ManageArtworks() {
   const [isLoading, setIsLoading] = useState(true);
   const [editArtworkId, setEditArtworkId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
-
-  const router = useRouter();
-  const { status } = useSession();
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-  }, [status, router]);
 
   const fetchArtworks = async () => {
     setIsLoading(true);
@@ -42,10 +31,8 @@ export default function ManageArtworks() {
   };
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchArtworks();
-    }
-  }, [status]);
+    fetchArtworks();
+  }, []);
 
   const handleDeleteArtwork = async (id: string) => {
     if (!confirm('Are you sure you want to delete this artwork? This action cannot be undone.')) {
@@ -73,25 +60,12 @@ export default function ManageArtworks() {
     }
   };
 
-  if (status === 'loading') {
-    return (
-      <>
-        <AdminNavbar />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <AdminNavbar />
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Manage Artworks</h1>
+          <h1 className="text-3xl font-bold mb-4">Manage Artworks</h1>
           <Link
             href="/admin/artworks/new"
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"

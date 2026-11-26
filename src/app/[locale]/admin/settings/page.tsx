@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import Image from 'next/image';
 import AdminNavbar from '@/components/AdminNavbar';
+import ImageUploader from '@/components/ImageUploader';
 import dynamic from 'next/dynamic';
 
 const ClientMDXEditor = dynamic(() => import('@/components/ClientMDXEditor'), {
@@ -11,14 +11,6 @@ const ClientMDXEditor = dynamic(() => import('@/components/ClientMDXEditor'), {
 });
 
 export default function SiteSettings() {
-  const { status } = useSession();
-  const router = useRouter();
-
-  if (status === 'unauthenticated') {
-    router.push('/login');
-  }
-
-  const [heroImage, setHeroImage] = useState<File | null>(null);
   const [currentHeroImage, setCurrentHeroImage] = useState<string | null>(null);
   const [aboutMeContent, setAboutMeContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,9 +24,11 @@ export default function SiteSettings() {
     const fetchHeroImage = async () => {
       try {
         const response = await fetch('/api/settings/hero-image');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        setCurrentHeroImage(data.imageUrl);
-        setHomepageContent(data.homepageContent.value.content);
+        setCurrentHeroImage(data.imageUrl ?? null);
+        // Empty on a fresh install, so never reach through the object.
+        setHomepageContent(data.homepageContent ?? '');
       } catch (error) {
         console.error('Error fetching hero image:', error);
       }
@@ -57,27 +51,18 @@ export default function SiteSettings() {
     fetchAboutMeContent();
   }, []);
 
-  const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setHeroImage(e.target.files[0]);
-    }
-  };
-
-  const handleHeroImageSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!heroImage) return;
-
+  // The image is already in Cloudinary by the time this runs: the uploader
+  // sends the file straight there, so only the URL comes back here.
+  const handleHeroImageUploaded = async (url: string) => {
     setIsSubmitting(true);
     setError('');
     setSuccessMessage('');
 
     try {
-      const formData = new FormData();
-      formData.append('heroImage', heroImage);
-
       const response = await fetch('/api/settings/hero-image', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl: url }),
       });
 
       if (!response.ok) {
@@ -205,35 +190,25 @@ export default function SiteSettings() {
           {currentHeroImage && (
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">Current Hero Image:</p>
-              <img
-                src={currentHeroImage}
-                alt="Current hero image"
-                className="w-full max-w-md h-auto rounded-md"
-              />
+              <div className="relative w-full max-w-md aspect-video rounded-md overflow-hidden">
+                <Image
+                  src={currentHeroImage}
+                  alt="Current hero image"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 448px"
+                  className="object-cover"
+                />
+              </div>
             </div>
           )}
 
-          <form onSubmit={handleHeroImageSubmit}>
-            <div className="mb-4">
-              <label htmlFor="heroImage" className="block text-gray-700 mb-2">
-                Upload New Hero Image
-              </label>
-              <input
-                type="file"
-                id="heroImage"
-                accept="image/*"
-                onChange={handleHeroImageChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={!heroImage || isSubmitting}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {isSubmitting ? 'Uploading...' : 'Update Hero Image'}
-            </button>
-          </form>
+          <div className="mb-2">
+            <p className="block text-gray-700 mb-2">Upload New Hero Image</p>
+            <ImageUploader onUploadComplete={handleHeroImageUploaded} />
+            {isSubmitting && (
+              <p className="text-sm text-gray-500 mt-2">Saving...</p>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">

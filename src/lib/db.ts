@@ -6,9 +6,15 @@ import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-export const db = globalForPrisma.prisma ||
+export const db =
+  globalForPrisma.prisma ||
   new PrismaClient({
-    log: ['query', 'error', 'warn'],
+    // Query logging is useful locally and noisy, slow and leaky in production,
+    // where every statement would land in the platform's logs.
+    log:
+      process.env.NODE_ENV === 'production'
+        ? ['error']
+        : ['query', 'error', 'warn'],
   });
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

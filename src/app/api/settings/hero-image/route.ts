@@ -1,41 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireAdmin } from "@/lib/require-admin";
 import { db } from "@/lib/db";
-import { uploadImage } from "@/lib/uploadImage";
 
-// GET endpoint to retrieve the current hero image
+// The browser uploads straight to Cloudinary using a signature from
+// /api/upload/signature, so this route only ever stores a URL.
+const CLOUDINARY_URL_PREFIX = "https://res.cloudinary.com/";
+
+/** Pulls a string out of a SiteSettings value stored either raw or wrapped. */
+function readValue(
+  value: unknown,
+  key: "url" | "content"
+): string | null {
+  if (typeof value === "string") return value;
+
+  if (value && typeof value === "object") {
+    const field = (value as Record<string, unknown>)[key];
+    if (typeof field === "string") return field;
+  }
+
+  return null;
+}
+
 export async function GET() {
   try {
-    const heroSetting = await db.siteSettings.findUnique({
-      where: { key: "heroImage" },
+    const [heroSetting, homepageSetting] = await Promise.all([
+      db.siteSettings.findUnique({ where: { key: "heroImage" } }),
+      db.siteSettings.findUnique({ where: { key: "homepageContent" } }),
+    ]);
+
+    // Both are null on a fresh install. Always answer with the same shape so
+    // callers never have to reach through a missing object.
+    return NextResponse.json({
+      imageUrl: readValue(heroSetting?.value, "url"),
+      homepageContent: readValue(homepageSetting?.value, "content") ?? "",
     });
-
-    const homepageContent = await db.siteSettings.findUnique({
-      where: { key: "homepageContent" },
-    });
-
-    if (heroSetting && heroSetting.value) {
-      // Extract the URL from the JSON value
-      const imageUrl =
-        typeof heroSetting.value === "string"
-          ? heroSetting.value
-          : (heroSetting.value as { url: string }).url || null;
-
-      // Ensure the image URL is absolute (not relative to locale)
-      const processedImageUrl = imageUrl
-        ? imageUrl.startsWith("http")
-          ? imageUrl
-          : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${imageUrl}`
-        : null;
-
-      return NextResponse.json({
-        imageUrl: processedImageUrl,
-        homepageContent,
-      });
-    } else {
-      return NextResponse.json({ imageUrl: null, homepageContent: null });
-    }
   } catch (error) {
     console.error("Error fetching hero image:", error);
     return NextResponse.json(
@@ -45,60 +43,29 @@ export async function GET() {
   }
 }
 
-// POST endpoint to update the hero image
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions);
+    const denied = await requireAdmin();
+    if (denied) return denied;
 
-    if (!session) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const body = await request.json();
+    const imageUrl = typeof body?.imageUrl === "string" ? body.imageUrl : "";
 
-    // Parse form data
-    const formData = await request.formData();
-    const heroImage = formData.get("heroImage");
-
-    if (!heroImage || !(heroImage instanceof Blob)) {
+    if (!imageUrl.startsWith(CLOUDINARY_URL_PREFIX)) {
       return NextResponse.json(
-        { message: "No image provided" },
+        { message: "The image must be uploaded before saving" },
         { status: 400 }
       );
     }
 
-    // Upload the image
-    const imageUrl = await uploadImage(heroImage);
-
-    // Update or create the hero image setting in the database
-    const heroSetting = await db.siteSettings.upsert({
+    await db.siteSettings.upsert({
       where: { key: "heroImage" },
-      update: {
-        value: { url: imageUrl },
-        updatedAt: new Date(),
-      },
-      create: {
-        key: "heroImage",
-        value: { url: imageUrl },
-      },
+      update: { value: { url: imageUrl } },
+      create: { key: "heroImage", value: { url: imageUrl } },
     });
 
-    // Extract the URL from the JSON value and ensure it's absolute
-    const responseUrl =
-      typeof heroSetting.value === "string"
-        ? heroSetting.value
-        : (heroSetting.value as { url: string }).url || null;
-
-    const processedImageUrl = responseUrl
-      ? responseUrl.startsWith("http")
-        ? responseUrl
-        : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${responseUrl}`
-      : null;
-
     return NextResponse.json(
-      {
-        message: "Hero image updated successfully",
-        imageUrl: processedImageUrl,
-      },
+      { message: "Hero image updated successfully", imageUrl },
       { status: 200 }
     );
   } catch (error) {

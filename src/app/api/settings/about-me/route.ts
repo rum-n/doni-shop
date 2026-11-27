@@ -1,70 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { requireAdmin } from "@/lib/require-admin";
-import { db } from '@/lib/db';
+import { db } from "@/lib/db";
+import {
+  EMPTY_LOCALIZED,
+  readLocalizedText,
+  writeLocalizedText,
+} from "@/lib/localized-setting";
 
-// GET endpoint to retrieve the current about me content
+const SETTINGS_KEY = "aboutMe";
+
+/**
+ * Returns the About copy for every locale, so the page can pick one and the
+ * admin can edit both. Always the same shape, empty included.
+ */
 export async function GET() {
   try {
-    const aboutMeSetting = await db.siteSettings.findUnique({
-      where: { key: 'aboutMe' },
+    const setting = await db.siteSettings.findUnique({
+      where: { key: SETTINGS_KEY },
     });
 
-    if (aboutMeSetting && aboutMeSetting.value) {
-      // Extract the content from the JSON value
-      const content = typeof aboutMeSetting.value === 'string'
-        ? aboutMeSetting.value
-        : (aboutMeSetting.value as { content: string }).content || '';
-
-      return NextResponse.json({ content });
-    } else {
-      return NextResponse.json({ content: '' });
-    }
+    return NextResponse.json({
+      content: setting ? readLocalizedText(setting.value) : EMPTY_LOCALIZED,
+    });
   } catch (error) {
-    console.error('Error fetching about me content:', error);
+    console.error("Error fetching about me content:", error);
     return NextResponse.json(
-      { message: 'An error occurred while fetching the about me content' },
+      { message: "An error occurred while fetching the about me content" },
       { status: 500 }
     );
   }
 }
 
-// POST endpoint to update the about me content
 export async function POST(request: NextRequest) {
   try {
     const denied = await requireAdmin();
     if (denied) return denied;
 
-    // Parse request body
-    const { content } = await request.json();
+    const body = await request.json();
+    const content = writeLocalizedText(body.content ?? body);
 
-    if (content === undefined) {
-      return NextResponse.json({ message: 'Content is required' }, { status: 400 });
+    if (!content) {
+      return NextResponse.json(
+        { message: "Expected content with `en` and/or `bg` text" },
+        { status: 400 }
+      );
     }
 
-    // Update or create the about me setting in the database
-    const aboutMeSetting = await db.siteSettings.upsert({
-      where: { key: 'aboutMe' },
-      update: {
-        value: { content },
-        updatedAt: new Date(),
-      },
+    await db.siteSettings.upsert({
+      where: { key: SETTINGS_KEY },
+      update: { value: content as unknown as Prisma.InputJsonObject },
       create: {
-        key: 'aboutMe',
-        value: { content },
+        key: SETTINGS_KEY,
+        value: content as unknown as Prisma.InputJsonObject,
       },
     });
 
-    return NextResponse.json({
-      message: 'About me content updated successfully',
-      content: typeof aboutMeSetting.value === 'string'
-        ? aboutMeSetting.value
-        : (aboutMeSetting.value as { content: string }).content || ''
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error('Error updating about me content:', error);
     return NextResponse.json(
-      { message: 'An error occurred while updating the about me content' },
+      { message: "About me content updated successfully", content },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error updating about me content:", error);
+    return NextResponse.json(
+      { message: "An error occurred while updating the about me content" },
       { status: 500 }
     );
   }

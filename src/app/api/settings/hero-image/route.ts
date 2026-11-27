@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/require-admin";
 import { db } from "@/lib/db";
+import { EMPTY_LOCALIZED, readLocalizedText } from "@/lib/localized-setting";
 
 // The browser uploads straight to Cloudinary using a signature from
 // /api/upload/signature, so this route only ever stores a URL.
@@ -32,7 +33,9 @@ export async function GET() {
     // callers never have to reach through a missing object.
     return NextResponse.json({
       imageUrl: readValue(heroSetting?.value, "url"),
-      homepageContent: readValue(homepageSetting?.value, "content") ?? "",
+      homepageContent: homepageSetting
+        ? readLocalizedText(homepageSetting.value)
+        : EMPTY_LOCALIZED,
     });
   } catch (error) {
     console.error("Error fetching hero image:", error);

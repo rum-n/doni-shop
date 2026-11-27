@@ -5,20 +5,19 @@ import Image from 'next/image';
 import AdminNavbar from '@/components/AdminNavbar';
 import ImageUploader from '@/components/ImageUploader';
 import InstagramStripEditor from '@/components/InstagramStripEditor';
-import dynamic from 'next/dynamic';
-
-const ClientMDXEditor = dynamic(() => import('@/components/ClientMDXEditor'), {
-  ssr: false,
-});
+import LocalizedMarkdownEditor from '@/components/LocalizedMarkdownEditor';
+import { EMPTY_LOCALIZED, type LocalizedText } from '@/lib/localized-setting';
 
 export default function SiteSettings() {
   const [currentHeroImage, setCurrentHeroImage] = useState<string | null>(null);
-  const [aboutMeContent, setAboutMeContent] = useState('');
+  const [aboutMeContent, setAboutMeContent] =
+    useState<LocalizedText>(EMPTY_LOCALIZED);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [editorLoaded, setEditorLoaded] = useState(false);
-  const [homepageContent, setHomepageContent] = useState('');
+  const [homepageContent, setHomepageContent] =
+    useState<LocalizedText>(EMPTY_LOCALIZED);
 
   useEffect(() => {
     // Fetch current hero image
@@ -28,8 +27,8 @@ export default function SiteSettings() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setCurrentHeroImage(data.imageUrl ?? null);
-        // Empty on a fresh install, so never reach through the object.
-        setHomepageContent(data.homepageContent ?? '');
+        // Per-locale, and empty on a fresh install.
+        setHomepageContent(data.homepageContent ?? EMPTY_LOCALIZED);
       } catch (error) {
         console.error('Error fetching hero image:', error);
       }
@@ -40,7 +39,7 @@ export default function SiteSettings() {
       try {
         const response = await fetch('/api/settings/about-me');
         const data = await response.json();
-        setAboutMeContent(data.content || '');
+        setAboutMeContent(data.content ?? EMPTY_LOCALIZED);
         setEditorLoaded(true);
       } catch (error) {
         console.error('Error fetching about me content:', error);
@@ -162,18 +161,17 @@ export default function SiteSettings() {
 
           <form onSubmit={handleHomepageContentSubmit}>
             <div className="mb-4">
-              <div className="border border-gray-300 rounded-md overflow-hidden">
-                {editorLoaded ? (
-                  <ClientMDXEditor
-                    markdown={homepageContent}
-                    onChange={setHomepageContent}
-                  />
-                ) : (
-                  <div className="flex justify-center items-center h-[400px] bg-gray-50">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                  </div>
-                )}
-              </div>
+              {editorLoaded ? (
+                <LocalizedMarkdownEditor
+                  id="homepage"
+                  value={homepageContent}
+                  onChange={setHomepageContent}
+                />
+              ) : (
+                <div className="flex justify-center items-center h-[400px] bg-gray-50 border border-gray-300 rounded-md">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
             </div>
             <button
               type="submit"
@@ -222,18 +220,17 @@ export default function SiteSettings() {
 
           <form onSubmit={handleAboutMeSubmit}>
             <div className="mb-4">
-              <div className="border border-gray-300 rounded-md overflow-hidden">
-                {editorLoaded ? (
-                  <ClientMDXEditor
-                    markdown={aboutMeContent}
-                    onChange={setAboutMeContent}
-                  />
-                ) : (
-                  <div className="flex justify-center items-center h-[400px] bg-gray-50">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-                  </div>
-                )}
-              </div>
+              {editorLoaded ? (
+                <LocalizedMarkdownEditor
+                  id="about"
+                  value={aboutMeContent}
+                  onChange={setAboutMeContent}
+                />
+              ) : (
+                <div className="flex justify-center items-center h-[400px] bg-gray-50 border border-gray-300 rounded-md">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
             </div>
             <button
               type="submit"

@@ -2,11 +2,17 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { useTranslations } from "next-intl";
 import MainLayout from "@/components/MainLayout";
 import InstagramStrip from "@/components/InstagramStrip";
 import { INSTAGRAM_PROFILE } from "@/lib/instagram";
+import {
+  EMPTY_LOCALIZED,
+  pickLocale,
+  type LocalizedText,
+} from "@/lib/localized-setting";
 
 // Set NEXT_PUBLIC_CONTACT_EMAIL to show an email address. Without it the page
 // still works and points visitors at the social accounts instead.
@@ -19,16 +25,23 @@ const SOCIALS = [
 ];
 
 export default function About() {
-  const [aboutContent, setAboutContent] = useState("");
+  const [aboutContent, setAboutContent] =
+    useState<LocalizedText>(EMPTY_LOCALIZED);
   const [isLoading, setIsLoading] = useState(true);
   const t = useTranslations("AboutPage");
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
+
+  // Falls back to the other language while a translation is missing, so the
+  // page is never blank just because one locale is unwritten.
+  const body = pickLocale(aboutContent, locale);
 
   useEffect(() => {
     const fetchAboutContent = async () => {
       try {
         const response = await fetch("/api/settings/about-me");
         const data = await response.json();
-        setAboutContent(data.content || "");
+        setAboutContent(data.content ?? EMPTY_LOCALIZED);
       } catch (error) {
         console.error("Error fetching about content:", error);
       } finally {
@@ -50,9 +63,9 @@ export default function About() {
           <div className="flex justify-center py-16">
             <div className="spinner h-10 w-10" />
           </div>
-        ) : aboutContent ? (
+        ) : body ? (
           <div className="rich-text text-base lg:text-lg">
-            <ReactMarkdown>{aboutContent}</ReactMarkdown>
+            <ReactMarkdown>{body}</ReactMarkdown>
           </div>
         ) : (
           <p className="py-12 text-center font-light text-ink-muted">

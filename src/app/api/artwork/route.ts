@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/require-admin";
 import { db } from "@/lib/db";
-import { normalizeArtwork } from "@/lib/artwork";
+import { MAX_ARTWORK_IMAGES, normalizeArtwork } from "@/lib/artwork";
 
 // Images are uploaded to Cloudinary by the browser, so the client only ever
 // sends us URLs. Reject anything that is not a Cloudinary URL.
@@ -61,6 +61,14 @@ export async function POST(request: NextRequest) {
     if (submittedImages.length === 0) {
       return NextResponse.json(
         { message: "At least one image is required" },
+        { status: 400 }
+      );
+    }
+
+    // The forms cap this too, but the limit has to hold for any caller.
+    if (submittedImages.length > MAX_ARTWORK_IMAGES) {
+      return NextResponse.json(
+        { message: `At most ${MAX_ARTWORK_IMAGES} images are allowed` },
         { status: 400 }
       );
     }

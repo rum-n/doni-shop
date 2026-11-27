@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'react-hot-toast';
 import ImageUploader from '@/components/ImageUploader';
+import { MAX_ARTWORK_IMAGES } from '@/lib/artwork';
 import Image from 'next/image';
 
 const CATEGORIES = [
@@ -162,8 +163,10 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
   };
 
   const handleImageUpload = (url: string) => {
-    if (formData.images.length >= 3) {
-      toast.error('Maximum of 3 images allowed per artwork');
+    if (formData.images.length >= MAX_ARTWORK_IMAGES) {
+      toast.error(
+        `Maximum of ${MAX_ARTWORK_IMAGES} images allowed per artwork`
+      );
       return;
     }
 
@@ -457,10 +460,10 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Images ({formData.images.length}/3)
+                      Images ({formData.images.length}/{MAX_ARTWORK_IMAGES})
                     </label>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                       {formData.images.map((image, index) => (
                         <div key={index} className="relative rounded-md overflow-hidden h-40 bg-gray-100">
                           <Image
@@ -507,7 +510,7 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
                         </div>
                       ))}
 
-                      {formData.images.length < 3 && (
+                      {formData.images.length < MAX_ARTWORK_IMAGES && (
                         <div className="h-40">
                           <ImageUploader onUploadComplete={handleImageUpload} />
                         </div>
@@ -515,7 +518,8 @@ export default function EditArtworkModal({ artworkId, onClose, onSave }: EditArt
                     </div>
 
                     <p className="text-sm text-gray-500">
-                      Add up to 3 images. The first image will be shown in gallery listings.
+                      Add up to {MAX_ARTWORK_IMAGES} images. The first image
+                      will be shown in gallery listings.
                     </p>
                   </div>
                 </div>

@@ -1,6 +1,18 @@
 import type { Artwork as ArtworkRow } from "@prisma/client";
 import type { Artwork } from "@/types/Artwork";
 
+/**
+ * How many images one artwork may carry.
+ *
+ * Eight matches Stripe's cap on `product_data.images`, so every image on a
+ * listing also reaches the Checkout page. Raising it past eight is fine — the
+ * checkout route already trims to the first eight — but the extras would then
+ * show on the site and not in Stripe.
+ *
+ * Enforced in the admin forms and again in the artwork POST and PUT handlers.
+ */
+export const MAX_ARTWORK_IMAGES = 8;
+
 type RawDimensions = {
   width?: string | number;
   height?: string | number;

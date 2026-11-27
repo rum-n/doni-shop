@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/require-admin";
 import { db } from "@/lib/db";
-import { normalizeArtwork } from "@/lib/artwork";
+import { MAX_ARTWORK_IMAGES, normalizeArtwork } from "@/lib/artwork";
 import { deleteImages } from "@/lib/cloudinary";
 
 // Images are uploaded to Cloudinary by the browser, so the client only ever
@@ -136,6 +136,13 @@ export async function PUT(
     if (images.length === 0) {
       return NextResponse.json(
         { message: "At least one image is required" },
+        { status: 400 }
+      );
+    }
+
+    if (images.length > MAX_ARTWORK_IMAGES) {
+      return NextResponse.json(
+        { message: `At most ${MAX_ARTWORK_IMAGES} images are allowed` },
         { status: 400 }
       );
     }

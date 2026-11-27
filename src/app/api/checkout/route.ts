@@ -8,6 +8,11 @@ import { SHIPPING_COUNTRIES } from "@/lib/shipping";
 // a separator is 25, so this many ids always fit.
 const MAX_ITEMS = 19;
 
+// Stripe's own ceiling on `product_data.images`. Deliberately separate from
+// MAX_ARTWORK_IMAGES: if the shop ever allows more images per listing, the
+// extras simply do not reach the Checkout page.
+const STRIPE_MAX_PRODUCT_IMAGES = 8;
+
 function resolveBaseUrl(request: Request): string {
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, "");
@@ -105,7 +110,7 @@ export async function POST(request: Request) {
               images: (artwork.images as { url?: string }[] | null)
                 ?.map((image) => image?.url)
                 .filter((url): url is string => typeof url === "string")
-                .slice(0, 8),
+                .slice(0, STRIPE_MAX_PRODUCT_IMAGES),
             },
             unit_amount: Math.round(artwork.price * 100),
           },

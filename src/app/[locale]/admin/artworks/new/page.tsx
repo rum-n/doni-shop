@@ -7,6 +7,7 @@ import Image from "next/image";
 import ImageUploader from "@/components/ImageUploader";
 import { toast } from "react-hot-toast";
 import { ArtworkFormData } from "@/types/Artwork";
+import { MAX_ARTWORK_IMAGES } from "@/lib/artwork";
 
 export default function NewArtwork() {
   const router = useRouter();
@@ -72,8 +73,10 @@ export default function NewArtwork() {
   };
 
   const handleImageUpload = (url: string) => {
-    if (formData.images.length >= 3) {
-      toast.error("Maximum of 3 images allowed per artwork");
+    if (formData.images.length >= MAX_ARTWORK_IMAGES) {
+      toast.error(
+        `Maximum of ${MAX_ARTWORK_IMAGES} images allowed per artwork`
+      );
       return;
     }
 
@@ -333,10 +336,10 @@ export default function NewArtwork() {
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Images ({formData.images.length}/3)
+                Images ({formData.images.length}/{MAX_ARTWORK_IMAGES})
               </label>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
                 {formData.images.map((image, index) => (
                   <div
                     key={index}
@@ -386,7 +389,7 @@ export default function NewArtwork() {
                   </div>
                 ))}
 
-                {formData.images.length < 3 && (
+                {formData.images.length < MAX_ARTWORK_IMAGES && (
                   <div className="h-40">
                     <ImageUploader onUploadComplete={handleImageUpload} />
                   </div>
@@ -394,7 +397,8 @@ export default function NewArtwork() {
               </div>
 
               <p className="text-sm text-gray-500">
-                Add up to 3 images. The first image will be shown in gallery
+                Add up to {MAX_ARTWORK_IMAGES} images. The first image will be
+                shown in gallery
                 listings.
               </p>
             </div>

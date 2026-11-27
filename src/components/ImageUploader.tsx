@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 interface ImageUploaderProps {
@@ -72,6 +72,12 @@ export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) 
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  // A page can hold several uploaders — the settings page has one for the hero
+  // image and one per Instagram slot. A hard-coded id made every label point at
+  // the first input in the document, so clicking any uploader opened (and then
+  // replaced) the hero image. useId gives each instance its own.
+  const inputId = useId();
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -136,7 +142,7 @@ export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) 
       ) : (
         <>
           <label
-            htmlFor="image-upload"
+            htmlFor={inputId}
             className="cursor-pointer block p-4 text-gray-500"
           >
             <svg
@@ -157,8 +163,7 @@ export default function ImageUploader({ onUploadComplete }: ImageUploaderProps) 
             <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
           </label>
           <input
-            id="image-upload"
-            name="image"
+            id={inputId}
             type="file"
             accept="image/*"
             className="sr-only"

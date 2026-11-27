@@ -11,7 +11,8 @@
     "create-admin": "node scripts/create-admin.js",
     "create-admin:ts": "ts-node scripts/create-admin.ts",
     "typecheck": "tsc --noEmit",
-    "doctor": "node --env-file=.env scripts/doctor.mjs"
+    "doctor": "node --env-file=.env scripts/doctor.mjs",
+    "reset-password": "node --env-file=.env scripts/reset-password.mjs"
   },
   "dependencies": {
     "@mdxeditor/editor": "^3.25.0",

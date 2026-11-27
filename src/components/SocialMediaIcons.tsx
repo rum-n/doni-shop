@@ -27,7 +27,7 @@ export default function SocialMediaIcons({
     },
     {
       name: "Facebook",
-      url: "https://facebook.com/doniboyadzhieva", // Update with actual Facebook URL
+      url: "https://www.facebook.com/doni.boqdjieva",
       icon: (
         <svg
           className="w-4 h-4 lg:w-5 lg:h-5"
@@ -40,7 +40,7 @@ export default function SocialMediaIcons({
     },
     {
       name: "Pinterest",
-      url: "https://pinterest.com/doniboyadzhieva", // Update with actual Pinterest URL
+      url: "https://www.pinterest.com/dboqdzhieva",
       icon: (
         <svg
           className="w-4 h-4 lg:w-5 lg:h-5"

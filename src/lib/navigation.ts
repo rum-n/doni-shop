@@ -16,7 +16,7 @@ export const SIDEBAR_ITEMS: NavItem[] = [
   { href: "/prints", label: "prints" },
   { href: "/linocut-stamps", label: "linocutStamps" },
   { href: "/accessories", label: "accessories" },
-  { href: "/contact", label: "contact" },
+  { href: "/about", label: "about" },
 ];
 
 /**

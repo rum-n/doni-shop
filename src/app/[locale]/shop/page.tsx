@@ -243,7 +243,7 @@ export default function Shop() {
           <p className="mx-auto mb-8 max-w-2xl font-light leading-relaxed text-ink-soft">
             {t("ctaText")}
           </p>
-          <Link href="/contact" className="btn btn-primary">
+          <Link href="/about" className="btn btn-primary">
             {t("ctaButton")}
           </Link>
         </section>

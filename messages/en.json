@@ -71,7 +71,7 @@
     "prints": "Prints",
     "linocutStamps": "Linocut Stamps",
     "accessories": "Accessories",
-    "contact": "Contact",
+    "about": "About",
     "cart": "Cart"
   },
   "AboutPage": {
@@ -79,7 +79,15 @@
     "empty": "No content has been added yet.",
     "ctaTitle": "Explore the artworks",
     "ctaPrints": "Prints",
-    "ctaLinocuts": "Linocut Stamps"
+    "ctaLinocuts": "Linocut Stamps",
+    "contactTitle": "Get in touch",
+    "contactText": "For questions about a piece, a commission, or shipping.",
+    "emailLabel": "Email",
+    "responseTime": "I usually reply within a few days.",
+    "noEmail": "The easiest way to reach me is through the social accounts below.",
+    "socialsLabel": "Find me on",
+    "instagramTitle": "From Instagram",
+    "instagramCta": "Follow on Instagram"
   },
   "CategoryPages": {
     "prints": {
@@ -127,14 +135,6 @@
     "total": "Total",
     "shippingTo": "Shipping to",
     "continue": "Browse more artworks"
-  },
-  "ContactPage": {
-    "title": "Contact",
-    "intro": "Get in touch about a particular piece, a commission, or shipping.",
-    "emailLabel": "Email",
-    "responseTime": "I usually reply within a few days.",
-    "noEmail": "The easiest way to reach me is through the social accounts below.",
-    "socialsLabel": "Find me on"
   },
   "NotFound": {
     "title": "Page not found",

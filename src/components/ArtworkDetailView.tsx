@@ -180,7 +180,7 @@ export default function ArtworkDetailView({ artwork }: { artwork: Artwork }) {
               <p className="mb-6 font-light leading-relaxed text-ink-soft">
                 {t("contact.text")}
               </p>
-              <Link href="/contact" className="btn btn-secondary">
+              <Link href="/about" className="btn btn-secondary">
                 {t("contact.button")}
               </Link>
             </div>

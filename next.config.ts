@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
         destination: "/:locale/shop",
         permanent: true,
       },
+      // /contact was folded into /about, which now carries the email, the
+      // social links and the Instagram strip.
+      { source: "/contact", destination: "/about", permanent: true },
+      {
+        source: "/:locale/contact",
+        destination: "/:locale/about",
+        permanent: true,
+      },
     ];
   },
   images: {

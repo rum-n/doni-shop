@@ -5,6 +5,18 @@ import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useTranslations } from "next-intl";
 import MainLayout from "@/components/MainLayout";
+import InstagramStrip from "@/components/InstagramStrip";
+import { INSTAGRAM_PROFILE } from "@/lib/instagram";
+
+// Set NEXT_PUBLIC_CONTACT_EMAIL to show an email address. Without it the page
+// still works and points visitors at the social accounts instead.
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+
+const SOCIALS = [
+  { name: "Instagram", url: INSTAGRAM_PROFILE },
+  { name: "Facebook", url: "https://facebook.com/doniboyadzhieva" },
+  { name: "Pinterest", url: "https://pinterest.com/doniboyadzhieva" },
+];
 
 export default function About() {
   const [aboutContent, setAboutContent] = useState("");
@@ -47,6 +59,48 @@ export default function About() {
             {t("empty")}
           </p>
         )}
+
+        {/* Absorbed from the old /contact page, which now redirects here. */}
+        <section className="mt-14 border-t border-line pt-10 lg:mt-20">
+          <h2 className="section-title mb-3">{t("contactTitle")}</h2>
+          <p className="mb-6 font-light leading-relaxed text-ink-soft">
+            {t("contactText")}
+          </p>
+
+          {CONTACT_EMAIL ? (
+            <div className="mb-8">
+              <h3 className="eyebrow mb-2">{t("emailLabel")}</h3>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="font-display text-xl font-normal break-all text-ink transition-colors hover:text-ink-muted"
+              >
+                {CONTACT_EMAIL}
+              </a>
+              <p className="meta-text mt-2">{t("responseTime")}</p>
+            </div>
+          ) : (
+            <p className="mb-8 font-light leading-relaxed text-ink-soft">
+              {t("noEmail")}
+            </p>
+          )}
+
+          <h3 className="eyebrow mb-3">{t("socialsLabel")}</h3>
+          <div className="flex flex-wrap gap-3">
+            {SOCIALS.map((social) => (
+              <a
+                key={social.name}
+                href={social.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary px-5 py-2 text-sm"
+              >
+                {social.name}
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <InstagramStrip />
 
         <div className="mt-14 border-t border-line pt-10 text-center lg:mt-20">
           <h2 className="section-title mb-6">{t("ctaTitle")}</h2>

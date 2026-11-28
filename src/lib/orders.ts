@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { hash } from "bcrypt";
 import type Stripe from "stripe";
 import { db } from "@/lib/db";
+import stripe from "@/lib/stripe";
 import { sendOrderEmails } from "@/lib/email";
 
 export type RecordResult =
@@ -35,6 +36,49 @@ function readArtworkIds(session: Stripe.Checkout.Session): string[] {
 
   const one = session.metadata?.artworkId;
   return one ? [one] : [];
+}
+
+/**
+ * Pulls out what the buyer paid for postage and which option they chose.
+ *
+ * The event payload carries the amount but only a shipping-rate id, so the
+ * session is re-read with the rate expanded to get its display name — which is
+ * the part that tells the owner whether to send it to a courier office or to
+ * the buyer's door.
+ */
+async function readShipping(session: Stripe.Checkout.Session): Promise<{
+  cost: number | null;
+  method: string | null;
+}> {
+  const cost =
+    typeof session.shipping_cost?.amount_total === "number"
+      ? session.shipping_cost.amount_total / 100
+      : null;
+
+  const rate = session.shipping_cost?.shipping_rate;
+
+  if (rate && typeof rate === "object" && rate.display_name) {
+    return { cost, method: rate.display_name };
+  }
+
+  if (typeof rate === "string") {
+    try {
+      const expanded = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ["shipping_cost.shipping_rate"],
+      });
+      const full = expanded.shipping_cost?.shipping_rate;
+
+      if (full && typeof full === "object") {
+        return { cost, method: full.display_name ?? null };
+      }
+    } catch (error) {
+      // The amount is the important half; a missing label is not worth
+      // failing the webhook over.
+      console.error(`Could not expand the shipping rate for ${session.id}:`, error);
+    }
+  }
+
+  return { cost, method: null };
 }
 
 /** Flattens Stripe's address into something the order page can print. */
@@ -127,6 +171,7 @@ export async function recordCheckoutSession(
       : session.payment_intent?.id ?? null;
 
   const shippingAddress = readShippingAddress(session);
+  const shipping = await readShipping(session);
 
   // Hashing is slow, so keep it outside the transaction
   const password = await unusablePassword();
@@ -156,7 +201,10 @@ export async function recordCheckoutSession(
           quantity: 1,
         })),
       },
+      // `amount_total` already includes postage; shippingCost breaks it out.
       total,
+      shippingCost: shipping.cost,
+      shippingMethod: shipping.method,
       ...(shippingAddress ? { shippingAddress } : {}),
       paymentIntent,
     },

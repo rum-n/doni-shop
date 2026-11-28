@@ -12,7 +12,9 @@
     "create-admin:ts": "ts-node scripts/create-admin.ts",
     "typecheck": "tsc --noEmit",
     "doctor": "node --env-file=.env scripts/doctor.mjs",
-    "reset-password": "node --env-file=.env scripts/reset-password.mjs"
+    "reset-password": "node --env-file=.env scripts/reset-password.mjs",
+    "test:analytics": "tsx scripts/analytics.test.mts",
+    "test:shipping": "tsx scripts/shipping.test.mts"
   },
   "dependencies": {
     "@mdxeditor/editor": "^3.25.0",

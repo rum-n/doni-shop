@@ -7,6 +7,7 @@ import MainLayout from "@/components/MainLayout";
 import { Artwork } from "@/types/Artwork";
 import BuyButton from "@/components/BuyButton";
 import AddToCartButton from "@/components/AddToCartButton";
+import ShippingZonePicker from "@/components/ShippingZonePicker";
 import ImageGallery from "@/components/ImageGallery";
 import { describeArtwork } from "@/lib/artwork";
 
@@ -156,6 +157,9 @@ export default function ArtworkDetailView({ artwork }: { artwork: Artwork }) {
 
             {artwork.inStock && (
               <div className="mb-8 lg:mb-10 space-y-3">
+                {/* Buy now goes straight to Checkout, so the zone must be
+                    choosable here and not only in the cart. */}
+                <ShippingZonePicker compact />
                 <BuyButton artworkId={artwork.id} inStock={artwork.inStock} />
                 <AddToCartButton
                   inStock={artwork.inStock}

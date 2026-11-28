@@ -24,6 +24,10 @@ export interface Order {
   orderNumber: string;
   createdAt: string;
   total: number;
+  /** Postage, already included in `total`. */
+  shippingCost?: number | null;
+  /** Which delivery option the buyer chose — says where the parcel goes. */
+  shippingMethod?: string | null;
   status: OrderStatus;
   shippingAddress?: ShippingAddress | null;
   customer: {

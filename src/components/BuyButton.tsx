@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "react-hot-toast";
 import { startCheckout, CheckoutError } from "@/lib/checkout";
+import { useCart } from "@/components/CartProvider";
 
 export default function BuyButton({
   artworkId,
@@ -17,12 +18,13 @@ export default function BuyButton({
   const t = useTranslations("BuyButton");
   const params = useParams();
   const locale = (params?.locale as string) || "en";
+  const { zone } = useCart();
 
   const handlePurchase = async () => {
     setIsLoading(true);
 
     try {
-      await startCheckout([artworkId], locale);
+      await startCheckout([artworkId], locale, zone);
       // On success the browser is already navigating to Stripe.
     } catch (error) {
       console.error("Error initiating checkout:", error);

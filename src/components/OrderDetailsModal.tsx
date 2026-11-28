@@ -47,6 +47,8 @@ interface Order {
   id: string;
   orderNumber: string;
   total: number;
+  shippingCost?: number | null;
+  shippingMethod?: string | null;
   status: OrderStatus;
   createdAt: string;
   shippingAddress: ShippingAddress | null;
@@ -163,10 +165,28 @@ export default function OrderDetailsModal({
                       <span className="font-medium">Date:</span>{" "}
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
+                    {typeof order.shippingCost === "number" && (
+                      <>
+                        <p>
+                          <span className="font-medium">Items:</span>{" "}
+                          {(order.total - order.shippingCost).toFixed(2)} EUR
+                        </p>
+                        <p>
+                          <span className="font-medium">Shipping:</span>{" "}
+                          {order.shippingCost.toFixed(2)} EUR
+                        </p>
+                      </>
+                    )}
                     <p>
                       <span className="font-medium">Total Amount:</span>{" "}
                       {order.total.toFixed(2)} EUR
                     </p>
+                    {order.shippingMethod && (
+                      <p>
+                        <span className="font-medium">Delivery:</span>{" "}
+                        {order.shippingMethod}
+                      </p>
+                    )}
                     <div className="flex items-center gap-3 pt-1">
                       <label
                         htmlFor="order-status"

@@ -10,6 +10,8 @@ import { useCart } from "@/components/CartProvider";
 interface ConfirmedOrder {
   orderNumber: string;
   total: number;
+  shippingCost?: number | null;
+  shippingMethod?: string | null;
   status: string;
   createdAt: string;
   shippingAddress: {
@@ -37,6 +39,7 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const t = useTranslations("CheckoutSuccess");
+  const tShipping = useTranslations("Shipping");
   const { clear } = useCart();
 
   const [order, setOrder] = useState<ConfirmedOrder | null>(null);
@@ -138,6 +141,17 @@ function SuccessContent() {
               </li>
             ))}
           </ul>
+
+          {typeof order.shippingCost === "number" && (
+            <div className="mb-2 flex justify-between text-sm">
+              <span className="font-light text-ink-muted">
+                {order.shippingMethod || tShipping("shipping")}
+              </span>
+              <span className="font-light text-ink-muted">
+                {order.shippingCost.toFixed(2)} EUR
+              </span>
+            </div>
+          )}
 
           <div className="mb-8 flex justify-between text-lg">
             <span className="font-light text-ink-soft">{t("total")}</span>

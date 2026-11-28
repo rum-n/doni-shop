@@ -12,23 +12,11 @@ type Availability = "all" | "available" | "outOfStock";
 
 const AVAILABILITY: Availability[] = ["all", "available", "outOfStock"];
 
-type PriceRange = [number, number];
-
-const PRICE_RANGES: { label: string; range: PriceRange }[] = [
-  { label: "all", range: [0, 10000] },
-  { label: "under500", range: [0, 500] },
-  { label: "500to1000", range: [500, 1000] },
-  { label: "over1000", range: [1000, 10000] },
-];
-
-const DEFAULT_PRICE: PriceRange = [0, 10000];
-
 export default function Shop() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortOption, setSortOption] = useState("newest");
   const [availability, setAvailability] = useState<Availability>("available");
-  const [priceRange, setPriceRange] = useState<PriceRange>(DEFAULT_PRICE);
   const t = useTranslations("ShopPage");
 
   useEffect(() => {
@@ -78,11 +66,8 @@ export default function Shop() {
   const filteredArtworks = sortedArtworks.filter((artwork) => {
     if (availability === "available" && !artwork.inStock) return false;
     if (availability === "outOfStock" && artwork.inStock) return false;
-    return artwork.price >= priceRange[0] && artwork.price <= priceRange[1];
+    return true;
   });
-
-  const isPriceActive = (range: PriceRange) =>
-    priceRange[0] === range[0] && priceRange[1] === range[1];
 
   const pillClass = (active: boolean) =>
     `pill ${active ? "pill-active" : "pill-idle"}`;
@@ -118,24 +103,6 @@ export default function Shop() {
               ))}
             </div>
 
-            <div
-              className="pill-group flex-wrap"
-              role="group"
-              aria-label={t("price")}
-            >
-              {PRICE_RANGES.map(({ label, range }) => (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => setPriceRange(range)}
-                  aria-pressed={isPriceActive(range)}
-                  className={pillClass(isPriceActive(range))}
-                >
-                  {t(label)}
-                </button>
-              ))}
-            </div>
-
             {/* The visible label is gone, so the select carries its own. */}
             <select
               aria-label={t("sort")}
@@ -164,7 +131,6 @@ export default function Shop() {
               onClick={() => {
                 setSortOption("newest");
                 setAvailability("all");
-                setPriceRange(DEFAULT_PRICE);
               }}
               className="btn btn-primary"
             >

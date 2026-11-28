@@ -9,14 +9,16 @@ import { toast } from "react-hot-toast";
 import MainLayout from "@/components/MainLayout";
 import { useCart, type CartItem } from "@/components/CartProvider";
 import { startCheckout, CheckoutError } from "@/lib/checkout";
+import ShippingZonePicker from "@/components/ShippingZonePicker";
 import type { Artwork } from "@/types/Artwork";
 
 export default function CartPage() {
   const t = useTranslations("Cart");
+  const tShipping = useTranslations("Shipping");
   const params = useParams();
   const locale = (params?.locale as string) || "en";
 
-  const { items, ready, total, remove, replace } = useCart();
+  const { items, ready, total, remove, replace, zone } = useCart();
   const [checking, setChecking] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -93,7 +95,8 @@ export default function CartPage() {
     try {
       await startCheckout(
         items.map((item) => item.id),
-        locale
+        locale,
+        zone
       );
     } catch (error) {
       console.error("Checkout failed:", error);
@@ -195,13 +198,34 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <div className="mb-8 flex items-baseline justify-between">
-                <span className="text-lg font-light text-ink-soft">
-                  {t("total")}
-                </span>
-                <span className="font-display text-2xl font-normal text-ink">
-                  {total.toFixed(2)} EUR
-                </span>
+              <ShippingZonePicker />
+
+              <div className="mb-8 space-y-2 border-t border-line pt-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="font-light text-ink-soft">
+                    {tShipping("subtotal")}
+                  </span>
+                  <span className="font-light text-ink-soft">
+                    {total.toFixed(2)} EUR
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="font-light text-ink-soft">
+                    {tShipping("shipping")}
+                  </span>
+                  <span className="meta-text">
+                    {tShipping("calculatedAtCheckout")}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between pt-2">
+                  <span className="text-lg font-light text-ink-soft">
+                    {t("total")}
+                  </span>
+                  <span className="font-display text-2xl font-normal text-ink">
+                    {total.toFixed(2)} EUR
+                    <span className="meta-text ml-1">+</span>
+                  </span>
+                </div>
               </div>
 
               <button

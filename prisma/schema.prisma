@@ -45,6 +45,12 @@ model Order {
   total           Float
   status          String      @default("pending") // "pending", "processing", "completed", "cancelled"
   shippingAddress Json? // Address details
+  /// Postage charged, in EUR. `total` already includes it; this breaks it out
+  /// so the owner can see the goods value separately.
+  shippingCost    Float?
+  /// Which option the buyer picked, e.g. "Courier office (Econt / Speedy)".
+  /// Matters for fulfilment: it says where the parcel goes.
+  shippingMethod  String?
   paymentIntent   String? // Stripe payment intent ID
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -66,4 +72,38 @@ model SiteSettings {
   value     Json?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// One row per page view, written by the site's own tracker.
+///
+/// Deliberately holds no personal data: no IP address, no cookie, no
+/// user-agent string. `visitorId` is a one-way hash of IP + user agent + a
+/// server secret + today's date, so it groups a person's views within a single
+/// day and cannot be reversed or followed into tomorrow. That is what keeps
+/// this consent-exempt under GDPR and means the site needs no cookie banner.
+model PageView {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  /// Client-generated id for this one view, so a later beacon can attach the
+  /// time spent without needing the insert's response.
+  viewId     String   @unique
+  /// Daily-rotating one-way hash. Counts unique visitors, identifies nobody.
+  visitorId  String
+  /// Per-tab id from sessionStorage, for grouping a visit's pages.
+  sessionId  String
+  path       String
+  locale     String?
+  /// Referrer hostname only, never the full URL.
+  referrer   String?
+  utmSource  String?
+  /// Two-letter code, only when the host provides one. Null otherwise.
+  country    String?
+  /// "mobile" | "tablet" | "desktop"
+  device     String
+  /// Time on this page, filled in by a beacon when the page is hidden.
+  durationMs Int?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([sessionId])
+  @@index([visitorId])
 }

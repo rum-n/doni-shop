@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { db } from "@/lib/db";
 import stripe from "@/lib/stripe";
 import { routing } from "@/i18n/routing";
-import { SHIPPING_COUNTRIES } from "@/lib/shipping";
+import {
+  DEFAULT_ZONE,
+  ZONE_COUNTRIES,
+  isShippingZone,
+  optionsForZone,
+  type ShippingZone,
+} from "@/lib/shipping";
+import { getShippingRates } from "@/lib/shipping-server";
 
 // Stripe caps a metadata value at 500 characters. A 24-character ObjectId plus
 // a separator is 25, so this many ids always fit.
@@ -56,6 +64,13 @@ export async function POST(request: Request) {
       );
     }
 
+    // The zone is chosen on this site because hosted Checkout cannot filter
+    // shipping options by the address the buyer enters. Narrowing
+    // `allowed_countries` to the zone is what keeps the two consistent.
+    const zone: ShippingZone = isShippingZone(body.zone)
+      ? body.zone
+      : DEFAULT_ZONE;
+
     const locale =
       typeof body.locale === "string" &&
       (routing.locales as readonly string[]).includes(body.locale)
@@ -92,6 +107,21 @@ export async function POST(request: Request) {
 
     const baseUrl = resolveBaseUrl(request);
 
+    // Read from the database, never from the request: an amount sent by the
+    // browser could be edited to zero.
+    const rates = await getShippingRates();
+
+    const shippingOptions = optionsForZone(zone, rates).map((option) => ({
+      shipping_rate_data: {
+        type: "fixed_amount" as const,
+        display_name: option.label,
+        fixed_amount: {
+          amount: Math.round(option.amount * 100),
+          currency: "eur",
+        },
+      },
+    }));
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: artworks.map((artwork) => {
@@ -120,9 +150,16 @@ export async function POST(request: Request) {
       mode: "payment",
       locale,
       // These are physical prints: without an address there is nothing to ship to.
+      // Restricted to the chosen zone, so the rate below always matches where
+      // the parcel is actually going.
       shipping_address_collection: {
-        allowed_countries: [...SHIPPING_COUNTRIES],
+        allowed_countries: ZONE_COUNTRIES[
+          zone
+        ] as Stripe.Checkout.SessionCreateParams.ShippingAddressCollection.AllowedCountry[],
       },
+      // Bulgaria offers two; the rest of the EU one. Both are safe to show,
+      // because every option here belongs to the same zone.
+      shipping_options: shippingOptions,
       phone_number_collection: { enabled: true },
       success_url: `${baseUrl}/${locale}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:
@@ -131,6 +168,7 @@ export async function POST(request: Request) {
           : `${baseUrl}/${locale}/cart`,
       metadata: {
         artworkIds: artworkIds.join(","),
+        shippingZone: zone,
       },
     });
 

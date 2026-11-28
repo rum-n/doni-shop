@@ -98,7 +98,27 @@ deliberately no HTTP endpoint for it.
    id, so repeated deliveries are idempotent, and then sends the order emails.
 4. The success page polls `/api/orders/session/<id>` until the order appears.
 
-Where the shop ships is the single list in `src/lib/shipping.ts`.
+### Shipping
+
+Two zones: **Bulgaria** and **the rest of the EU**. Amounts are set in Admin →
+Site Settings → Shipping and charged once per order on top of the items.
+Bulgaria offers two options the buyer picks between in Checkout (courier office
+or home delivery); the EU zone is one flat rate.
+
+The zone is chosen **on this site**, before the Checkout session exists, because
+hosted Stripe Checkout shows whichever `shipping_options` the session was
+created with and cannot narrow them by the address the buyer then types. Each
+session is therefore created with `allowed_countries` restricted to the chosen
+zone — so a buyer who picked Bulgaria is only offered Bulgaria in Stripe's
+country dropdown and can never pay a domestic rate on a foreign address. Within
+a zone there is no such risk, which is why Bulgaria can safely show two options.
+
+Rates are read from the database inside the checkout route, never taken from the
+request: an amount sent by the browser could be edited to zero. `Order.total`
+includes postage; `Order.shippingCost` and `Order.shippingMethod` break it out
+so the owner can see the goods value and where the parcel goes.
+
+The zone list lives in `src/lib/shipping.ts`.
 
 ### Stock
 
@@ -114,6 +134,23 @@ buyer and a notification to the shop owner, with the buyer as `reply-to`.
 Sending is best effort — the order is already paid for and saved, so a provider
 outage is logged rather than turned into a webhook retry. Unset the Resend
 variables and the shop still works, silently sending nothing.
+
+### Analytics
+
+First-party, in `/admin/analytics`. No third party, no cookie, and therefore no
+consent banner: `PageView.visitorId` is a one-way SHA-256 of IP + user agent +
+`NEXTAUTH_SECRET` + **today's date**. It counts a person once per day and cannot
+be reversed, carried into tomorrow, or joined across sites. No IP or user-agent
+string is ever stored.
+
+Obvious crawlers are filtered on the server, and `/admin` and `/login` are never
+recorded, so the owner's own browsing stays out of the numbers. Time on page
+comes from a `navigator.sendBeacon` when the page is hidden, capped at 30
+minutes so an abandoned tab is not counted as reading.
+
+`PageView` grows one row per view. At this shop's volume that is fine for years,
+but it is unbounded — add a periodic delete of rows older than a year if it ever
+matters.
 
 ### Images
 
@@ -132,6 +169,8 @@ only ever accepts and stores `https://res.cloudinary.com/...` URLs.
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run create-admin` | Create the owner account (interactive) |
 | `npm run doctor` | Check env, Stripe, the webhook endpoint, the database and email |
+| `npm run test:analytics` | Exercise the analytics aggregation against known input |
+| `npm run test:shipping` | Exercise the shipping zones and rate validation |
 
 ## Known gaps
 

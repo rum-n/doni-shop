@@ -31,6 +31,8 @@ export async function GET(
       select: {
         orderNumber: true,
         total: true,
+        shippingCost: true,
+        shippingMethod: true,
         status: true,
         createdAt: true,
         shippingAddress: true,

@@ -17,12 +17,14 @@ export class CheckoutError extends Error {
 
 export async function startCheckout(
   artworkIds: string[],
-  locale: string
+  locale: string,
+  /** Shipping zone chosen on the site; Checkout cannot infer it. */
+  zone: string
 ): Promise<never | void> {
   const response = await fetch("/api/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ artworkIds, locale }),
+    body: JSON.stringify({ artworkIds, locale, zone }),
   });
 
   let payload: {

@@ -53,6 +53,15 @@ export default function AdminNavbar() {
               Orders
             </Link>
             <Link
+              href="/admin/analytics"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/analytics')
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+            >
+              Analytics
+            </Link>
+            <Link
               href="/admin/settings"
               className={`px-3 py-2 rounded-md text-sm font-medium ${isActive('/admin/settings')
                   ? 'bg-gray-900 text-white'
@@ -134,6 +143,15 @@ export default function AdminNavbar() {
               }`}
           >
             Orders
+          </Link>
+          <Link
+            href="/admin/analytics"
+            className={`block px-3 py-2 rounded-md text-base font-medium ${isActive('/admin/analytics')
+                ? 'bg-gray-900 text-white'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+          >
+            Analytics
           </Link>
           <Link
             href="/admin/settings"

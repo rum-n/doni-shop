@@ -33,6 +33,19 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h2 className="text-xl font-semibold mb-4">Analytics</h2>
+            <p className="text-gray-600 mb-4">
+              Visitors, pages and referrers. First-party and cookie-free.
+            </p>
+            <Link
+              href="/admin/analytics"
+              className="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              View Analytics
+            </Link>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
             <h2 className="text-xl font-semibold mb-4">Site Settings</h2>
             <p className="text-gray-600 mb-4">
               Update homepage hero image and other site settings.

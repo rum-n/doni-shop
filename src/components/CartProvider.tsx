@@ -8,6 +8,11 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  DEFAULT_ZONE,
+  isShippingZone,
+  type ShippingZone,
+} from "@/lib/shipping";
 
 export interface CartItem {
   id: string;
@@ -29,9 +34,16 @@ interface CartContextValue {
   has: (id: string) => boolean;
   /** Replaces the cart wholesale, used after re-checking stock and prices. */
   replace: (items: CartItem[]) => void;
+  /**
+   * Where the order ships. Chosen here rather than in Stripe because hosted
+   * Checkout cannot vary its shipping options by the address entered.
+   */
+  zone: ShippingZone;
+  setZone: (zone: ShippingZone) => void;
 }
 
 const STORAGE_KEY = "doni-shop-cart";
+const ZONE_KEY = "doni-shop-zone";
 
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -53,6 +65,7 @@ function isCartItem(value: unknown): value is CartItem {
  */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [zone, setZoneState] = useState<ShippingZone>(DEFAULT_ZONE);
   const [ready, setReady] = useState(false);
 
   // Read once on mount. Storage can be unavailable (private windows, blocked
@@ -66,6 +79,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (Array.isArray(parsed)) {
           setItems(parsed.filter(isCartItem));
         }
+      }
+
+      const storedZone = window.localStorage.getItem(ZONE_KEY);
+      if (isShippingZone(storedZone)) {
+        setZoneState(storedZone);
       }
     } catch {
       // An unreadable cart is an empty cart, not a broken page.
@@ -101,6 +119,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const replace = useCallback((next: CartItem[]) => setItems(next), []);
 
+  const setZone = useCallback((next: ShippingZone) => {
+    setZoneState(next);
+    try {
+      window.localStorage.setItem(ZONE_KEY, next);
+    } catch {
+      // Remembering the choice is a convenience, not a requirement.
+    }
+  }, []);
+
   const value = useMemo<CartContextValue>(
     () => ({
       items,
@@ -112,8 +139,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clear,
       has: (id: string) => items.some((item) => item.id === id),
       replace,
+      zone,
+      setZone,
     }),
-    [items, ready, add, remove, clear, replace]
+    [items, ready, add, remove, clear, replace, zone, setZone]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

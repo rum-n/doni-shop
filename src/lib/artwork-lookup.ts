@@ -21,3 +21,27 @@ export async function findArtwork(slugOrId: string): Promise<Artwork | null> {
 
   return null;
 }
+
+/**
+ * Lists artworks for a storefront page, read on the server.
+ *
+ * Pages used to fetch their own API from `useEffect`, which meant the markup a
+ * crawler (or a slow connection) first received was a spinner. Reading the
+ * database here puts the real content in the HTML.
+ */
+export async function listArtworks(options?: {
+  category?: string;
+  inStock?: boolean;
+}): Promise<Artwork[]> {
+  const where: { category?: string; inStock?: boolean } = {};
+
+  if (options?.category) where.category = options.category;
+  if (typeof options?.inStock === "boolean") where.inStock = options.inStock;
+
+  const rows = await db.artwork.findMany({
+    where: Object.keys(where).length > 0 ? where : undefined,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return rows.map(normalizeArtwork);
+}

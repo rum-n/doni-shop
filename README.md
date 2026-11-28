@@ -172,10 +172,26 @@ only ever accepts and stores `https://res.cloudinary.com/...` URLs.
 | `npm run test:analytics` | Exercise the analytics aggregation against known input |
 | `npm run test:shipping` | Exercise the shipping zones and rate validation |
 
+### Legal pages
+
+`/terms`, `/privacy` and `/returns` are server-rendered from bilingual markdown
+held in SiteSettings and edited in Admin → Site Settings → Legal Pages. Each
+ships with a skeleton of the headings an EU distance seller must cover —
+trader identity, total price including delivery, the 14-day right of
+withdrawal, GDPR disclosures. **Those skeletons are a starting point, not legal
+advice, and are not sufficient as shipped.** Until a page is saved, visitors see
+a notice saying it is not final, and the admin flags it too.
+
+They are linked from the footer on every page, which is what makes them
+findable as the rules require.
+
 ## Known gaps
 
 - **No shipping cost** is charged — prices are the artwork alone.
-- **No tests and no CI.**
+- **No CI.** `npm run typecheck`, `lint`, `test:analytics` and `test:shipping`
+  exist but nothing runs them on push.
+- **The legal pages still hold placeholder text** — every `[bracketed]` value
+  needs replacing and the result needs a legal review.
 - **The admin area** is still on the pre-redesign styling and is English only.
 - **`Artwork.featured`** is written by the admin form and filterable in the API,
   but no page uses it: the homepage has no featured row and the shop lists

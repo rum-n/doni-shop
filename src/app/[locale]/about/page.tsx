@@ -1,18 +1,11 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import MainLayout from "@/components/MainLayout";
 import InstagramStrip from "@/components/InstagramStrip";
 import { INSTAGRAM_PROFILE } from "@/lib/instagram";
-import {
-  EMPTY_LOCALIZED,
-  pickLocale,
-  type LocalizedText,
-} from "@/lib/localized-setting";
+import { db } from "@/lib/db";
+import { pickLocale, readLocalizedText } from "@/lib/localized-setting";
 
 // Set NEXT_PUBLIC_CONTACT_EMAIL to show an email address. Without it the page
 // still works and points visitors at the social accounts instead.
@@ -24,33 +17,26 @@ const SOCIALS = [
   { name: "Pinterest", url: "https://pinterest.com/doniboyadzhieva" },
 ];
 
-export default function About() {
-  const [aboutContent, setAboutContent] =
-    useState<LocalizedText>(EMPTY_LOCALIZED);
-  const [isLoading, setIsLoading] = useState(true);
-  const t = useTranslations("AboutPage");
-  const params = useParams();
-  const locale = (params?.locale as string) || "en";
+type Params = Promise<{ locale: string }>;
 
-  // Falls back to the other language while a translation is missing, so the
-  // page is never blank just because one locale is unwritten.
-  const body = pickLocale(aboutContent, locale);
+/** Reads the admin-written bio directly, rather than fetching its own API. */
+async function getAboutBody(locale: string): Promise<string> {
+  try {
+    const setting = await db.siteSettings.findUnique({
+      where: { key: "aboutMe" },
+    });
 
-  useEffect(() => {
-    const fetchAboutContent = async () => {
-      try {
-        const response = await fetch("/api/settings/about-me");
-        const data = await response.json();
-        setAboutContent(data.content ?? EMPTY_LOCALIZED);
-      } catch (error) {
-        console.error("Error fetching about content:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    return setting ? pickLocale(readLocalizedText(setting.value), locale) : "";
+  } catch (error) {
+    console.error("Could not read the about content:", error);
+    return "";
+  }
+}
 
-    fetchAboutContent();
-  }, []);
+export default async function About({ params }: { params: Params }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "AboutPage" });
+  const body = await getAboutBody(locale);
 
   return (
     <MainLayout currentPath="/about">
@@ -59,11 +45,7 @@ export default function About() {
           <h1 className="page-title">{t("title")}</h1>
         </header>
 
-        {isLoading ? (
-          <div className="flex justify-center py-16">
-            <div className="spinner h-10 w-10" />
-          </div>
-        ) : body ? (
+        {body ? (
           <div className="rich-text text-base lg:text-lg">
             <ReactMarkdown>{body}</ReactMarkdown>
           </div>
@@ -113,7 +95,7 @@ export default function About() {
           </div>
         </section>
 
-        <InstagramStrip />
+        <InstagramStrip locale={locale} />
 
         <div className="mt-14 border-t border-line pt-10 text-center lg:mt-20">
           <h2 className="section-title mb-6">{t("ctaTitle")}</h2>

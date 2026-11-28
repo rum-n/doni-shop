@@ -6,6 +6,7 @@ import AdminNavbar from '@/components/AdminNavbar';
 import ImageUploader from '@/components/ImageUploader';
 import InstagramStripEditor from '@/components/InstagramStripEditor';
 import ShippingRatesEditor from '@/components/ShippingRatesEditor';
+import LegalPagesEditor from '@/components/LegalPagesEditor';
 import LocalizedMarkdownEditor from '@/components/LocalizedMarkdownEditor';
 import { EMPTY_LOCALIZED, type LocalizedText } from '@/lib/localized-setting';
 
@@ -209,6 +210,11 @@ export default function SiteSettings() {
               <p className="text-sm text-gray-500 mt-2">Saving...</p>
             )}
           </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Legal Pages</h2>
+          <LegalPagesEditor />
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-8">

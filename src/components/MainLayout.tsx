@@ -4,6 +4,7 @@ import { useState } from "react";
 import Sidebar from "./Sidebar";
 import TopNav from "./TopNav";
 import SocialMediaIcons from "./SocialMediaIcons";
+import SiteFooter from "./SiteFooter";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,8 @@ export default function MainLayout({ children, currentPath }: MainLayoutProps) {
 
       {/* pt-20 clears the fixed header */}
       <main className="flex-1 pt-20">{children}</main>
+
+      <SiteFooter />
     </div>
   );
 }

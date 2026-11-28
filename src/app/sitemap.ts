@@ -9,6 +9,9 @@ const STATIC_PATHS = [
   "/linocut-stamps",
   "/accessories",
   "/about",
+  "/terms",
+  "/privacy",
+  "/returns",
 ];
 
 function baseUrl(): string {

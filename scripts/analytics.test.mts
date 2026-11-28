@@ -1,4 +1,4 @@
-import { summarize, type ReportableView } from "./src/lib/analytics";
+import { summarize, type ReportableView } from "../src/lib/analytics";
 
 const NOW = new Date("2026-11-28T12:00:00Z");
 const day = (d: string, h = 10) => new Date(`${d}T${String(h).padStart(2, "0")}:00:00Z`);

@@ -157,5 +157,12 @@
     "subtotal": "Subtotal",
     "shipping": "Shipping",
     "calculatedAtCheckout": "calculated at checkout"
+  },
+  "Legal": {
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "returns": "Returns & Refunds",
+    "footerHeading": "Information",
+    "draftNotice": "This page has not been finalised yet."
   }
 }

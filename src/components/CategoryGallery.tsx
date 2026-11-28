@@ -1,49 +1,28 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Artwork } from "@/types/Artwork";
 
 interface CategoryGalleryProps {
-  category: string;
+  artworks: Artwork[];
+  locale: string;
   title: string;
   description?: string;
 }
 
-export default function CategoryGallery({
-  category,
+/**
+ * A category's artworks.
+ *
+ * A server component: the artworks arrive as a prop, so there is no fetching
+ * state left and the grid is in the HTML on first paint.
+ */
+export default async function CategoryGallery({
+  artworks,
+  locale,
   title,
   description,
 }: CategoryGalleryProps) {
-  const t = useTranslations("CategoryPages");
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchArtworks = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `/api/artwork?category=${category}&inStock=true`
-        );
-        const data = await response.json();
-
-        if (data.artworks) {
-          setArtworks(data.artworks);
-        }
-      } catch (error) {
-        console.error("Error fetching artworks:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchArtworks();
-  }, [category]);
-
-  // Group artworks into pairs for rows of two
+  const t = await getTranslations({ locale, namespace: "CategoryPages" });
   const artworkPairs = [];
   for (let i = 0; i < artworks.length; i += 2) {
     artworkPairs.push(artworks.slice(i, i + 2));
@@ -57,12 +36,7 @@ export default function CategoryGallery({
         {description && <p className="page-intro">{description}</p>}
       </header>
 
-      {/* Loading State */}
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="spinner h-10 w-10" />
-        </div>
-      ) : (
+      {artworks.length > 0 ? (
         /* Artwork Grid - Rows of Two Centered */
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col space-y-8 lg:space-y-12">
@@ -121,10 +95,10 @@ export default function CategoryGallery({
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Empty State */}
-      {!isLoading && artworks.length === 0 && (
+      {artworks.length === 0 && (
         <div className="py-16 text-center">
           <p className="text-lg font-light text-ink-muted">{t("noArtworks")}</p>
         </div>

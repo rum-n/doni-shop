@@ -1,62 +1,68 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import MainLayout from "@/components/MainLayout";
 import VideoBackground from "@/components/VideoBackground";
-import {
-  EMPTY_LOCALIZED,
-  pickLocale,
-  type LocalizedText,
-} from "@/lib/localized-setting";
+import { db } from "@/lib/db";
+import { pickLocale, readLocalizedText } from "@/lib/localized-setting";
 
-export default function Home() {
-  const [heroImage, setHeroImage] = useState<string | null>(null);
-  const [homepageContent, setHomepageContent] =
-    useState<LocalizedText>(EMPTY_LOCALIZED);
-  const params = useParams();
-  const locale = (params?.locale as string) || "en";
+type Params = Promise<{ locale: string }>;
 
-  const hero = pickLocale(homepageContent, locale);
+/** Hero image and intro copy, read directly instead of via the settings API. */
+async function getHomepage(locale: string) {
+  try {
+    const [hero, content] = await Promise.all([
+      db.siteSettings.findUnique({ where: { key: "heroImage" } }),
+      db.siteSettings.findUnique({ where: { key: "homepageContent" } }),
+    ]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/settings/hero-image");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const value = hero?.value;
+    const imageUrl =
+      typeof value === "string"
+        ? value
+        : value && typeof value === "object" && "url" in value
+        ? ((value as { url?: unknown }).url as string | undefined) ?? null
+        : null;
 
-        const data = await response.json();
-
-        setHeroImage(data.imageUrl ?? null);
-        // Per-locale copy; the endpoint normalises older single-language rows.
-        setHomepageContent(data.homepageContent ?? EMPTY_LOCALIZED);
-      } catch (error) {
-        console.error("Error fetching homepage settings:", error);
-      }
+    return {
+      heroImage: imageUrl,
+      body: content ? pickLocale(readLocalizedText(content.value), locale) : "",
     };
+  } catch (error) {
+    console.error("Could not read the homepage settings:", error);
+    return { heroImage: null, body: "" };
+  }
+}
 
-    fetchData();
-  }, []);
+export default async function Home({ params }: { params: Params }) {
+  const { locale } = await params;
+  const { heroImage, body } = await getHomepage(locale);
 
   return (
     <MainLayout currentPath="/">
-      <VideoBackground
-        videoSrc="/home-vid.mp4"
-        posterSrc="/home-vid.jpg"
-        fallbackImage={heroImage || undefined}
-        overlayOpacity={0.6}
-      />
+      {/* Full viewport, but scoped to this section rather than fixed to it:
+          the page scrolls past the hero and the footer follows below.
 
-      <div className="page-shell page-width relative z-10">
-        <section className="flex min-h-[55vh] flex-col items-center justify-center text-center lg:min-h-[65vh]">
-          {hero && (
-            <div className="rich-text rich-text-invert max-w-2xl text-lg lg:text-xl">
-              <ReactMarkdown>{hero}</ReactMarkdown>
+          `-mt-20` cancels the `pt-20` MainLayout adds for the fixed header, so
+          the video reaches the very top of the screen and shows through the
+          header's translucent blur. `isolate` keeps the background's z-index
+          inside the section, so the header still paints above it.
+
+          `dvh` where supported: on mobile, `vh` is the *largest* viewport, so a
+          100vh hero sits partly behind the browser's address bar. */}
+      <section className="relative isolate -mt-20 flex min-h-screen items-center justify-center overflow-hidden supports-[min-height:100dvh]:min-h-[100dvh]">
+        <VideoBackground
+          fallbackImage={heroImage || undefined}
+          overlayOpacity={0.6}
+        />
+
+        {/* pt-20 keeps the copy clear of the header the video now runs under */}
+        <div className="page-shell page-width relative z-10 pt-20 text-center">
+          {body && (
+            <div className="rich-text rich-text-invert mx-auto max-w-2xl text-lg lg:text-xl">
+              <ReactMarkdown>{body}</ReactMarkdown>
             </div>
           )}
-        </section>
-      </div>
+        </div>
+      </section>
     </MainLayout>
   );
 }

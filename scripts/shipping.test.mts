@@ -1,5 +1,5 @@
 import { optionsForZone, cheapestForZone, parseShippingRates, readShippingRates,
-         ZONE_COUNTRIES, isShippingZone, DEFAULT_RATES } from "./src/lib/shipping";
+         ZONE_COUNTRIES, isShippingZone, DEFAULT_RATES } from "../src/lib/shipping";
 
 let bad = 0;
 const check = (name: string, got: unknown, want: unknown) => {

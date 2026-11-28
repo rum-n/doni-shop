@@ -1,10 +1,7 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
-
-import { INSTAGRAM_PROFILE, type InstagramSlot } from "@/lib/instagram";
+import { getTranslations } from "next-intl/server";
+import { INSTAGRAM_PROFILE } from "@/lib/instagram";
+import { getInstagramSlots } from "@/lib/instagram-server";
 
 /**
  * A row of images from Instagram, each linking to its own post.
@@ -13,32 +10,14 @@ import { INSTAGRAM_PROFILE, type InstagramSlot } from "@/lib/instagram";
  * pulled from Instagram: their CDN URLs are signed, expire, and cannot be
  * hotlinked, so a stored Instagram image address would break within days.
  *
- * Renders nothing at all when no slots are filled, so the About page does not
- * show an empty heading over a blank row.
+ * A server component — renders nothing at all when no slots are filled, so the
+ * About page never shows an empty heading over a blank row.
  */
-export default function InstagramStrip() {
-  const t = useTranslations("AboutPage");
-  const [items, setItems] = useState<InstagramSlot[] | null>(null);
+export default async function InstagramStrip({ locale }: { locale: string }) {
+  const t = await getTranslations({ locale, namespace: "AboutPage" });
+  const items = await getInstagramSlots();
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const response = await fetch("/api/settings/instagram");
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const data = await response.json();
-        setItems(Array.isArray(data.items) ? data.items : []);
-      } catch (error) {
-        console.error("Could not load the Instagram strip:", error);
-        setItems([]);
-      }
-    };
-
-    load();
-  }, []);
-
-  // null while loading, [] when unset: both render nothing.
-  if (!items || items.length === 0) return null;
+  if (items.length === 0) return null;
 
   return (
     <section className="mt-14 border-t border-line pt-10 lg:mt-20">
